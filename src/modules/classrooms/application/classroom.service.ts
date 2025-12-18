@@ -28,15 +28,36 @@ export class ClassroomService {
 
   async findOne(id: number): Promise<Classroom | null> {
     const classroom = await this.repo.findById(id);
-    if (!classroom) throw new NotFoundException('Classroom Not Found!');
+    if (!classroom) throw new NotFoundException('Classroom Not Found');
     
     return classroom;
   } 
 
   async findByClassCode(classCode: string): Promise<Classroom | null> {
     const classroom = await this.repo.findByClassCode(classCode);
-    if (!classCode) throw new NotFoundException('Classroom Not Found!');
+    if (!classCode) throw new NotFoundException('Classroom Not Found');
 
     return classroom
+  }
+
+  async rename(id: number, newName: string) {
+    const classroom = await this.repo.findById(id);
+    if (!classroom) throw new NotFoundException('Classroom Not Found');
+
+    classroom.rename(newName);
+    return this.repo.save(classroom);
+  }
+
+  async updateDescription(id: number, newDescription?: string) {
+    const classroom = await this.repo.findById(id);
+    if (!classroom) throw new NotFoundException('Classroom Not Found');
+
+    classroom.changeDescription(newDescription);
+    return this.repo.save(classroom);
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.findOne(id);
+    await this.repo.deleteById(id);
   }
 }

@@ -8,13 +8,21 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async save(classroom: Classroom): Promise<Classroom> {
-    const created = await this.prisma.classroom.create({
-      data: {
+    const created = await this.prisma.classroom.upsert({
+      where: { id: classroom.id ?? 0 },
+      update: {
         class_code: classroom.classCode,
         name: classroom.name,
-        description: classroom.description ?? null,
+        description: classroom.description,
         teacher_id: classroom.teacherId,
-      }
+        updated_at: classroom.updatedAt,
+      },
+      create: {
+        class_code: classroom.classCode,
+        name: classroom.name,
+        description: classroom.description,
+        teacher_id: classroom.teacherId,
+      },
     });
 
     return this.toDomain(created);
@@ -47,6 +55,10 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
       where: { teacher_id: teacherId }
     });
     return classrooms.map(this.toDomain);
+  }
+
+  async deleteById(id: number): Promise<void> {
+    await this.prisma.classroom.delete({ where: { id } });
   }
   
   private toDomain(raw: any): Classroom {

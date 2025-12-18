@@ -33,4 +33,14 @@ export class Classroom {
     this.name = newName;
     this.updatedAt = new Date();
   }
+
+  changeDescription(description?: string) {
+    this.description = description;
+    this.updatedAt = new Date();
+  }
+
+  assignTeacher(teacherId: number) {
+    this.teacherId = teacherId;
+    this.updatedAt = new Date();
+  }
 }
