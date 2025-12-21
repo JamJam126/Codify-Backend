@@ -48,8 +48,6 @@ BullMQ requires Redis. Make sure Redis is running on `localhost:6379`.
 ```bash
 docker build -t code-runner-python ./docker
 
-# Optional: build C image if supported
-# docker build -t code-runner-c ./docker-c
 ```
 
 ### 4. Start backend API
