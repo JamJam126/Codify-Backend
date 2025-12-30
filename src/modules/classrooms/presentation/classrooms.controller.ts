@@ -1,45 +1,128 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiNoContentResponse,
+  ApiNotFoundResponse,
+  ApiForbiddenResponse,
+} from '@nestjs/swagger';
+
 import { ClassroomService } from '../application/classroom.service';
 import { CreateClassroomDto } from '../application/dto/create-classroom.dto';
-import { Classroom } from '../domain/classroom.entity';
 import { UpdateClassroomDto } from '../application/dto/update-classroom.dto';
+import { ClassroomResponseDto } from './dto/classroom-response.dto';
 
+@ApiTags('classrooms')
 @Controller('classrooms')
 export class ClassroomsController {
   constructor(private readonly service: ClassroomService) {}
 
+  // =============== CREATE =================
   @Post()
-  create(@Body() dto: CreateClassroomDto): Promise<Classroom> {
-    const userId = 1; // HARD-CODED MOCK USER
+  @ApiOperation({ summary: 'Create a classroom' })
+  @ApiBody({ type: CreateClassroomDto })
+  @ApiCreatedResponse({
+    description: 'Classroom created successfully',
+    type: ClassroomResponseDto,
+  })
+  create(
+    @Body() dto: CreateClassroomDto,
+  ) {
+    const userId = 1; // mock user
     return this.service.create(dto, userId);
   }
 
+  // =============== FIND ALL =================
   @Get()
+  @ApiOperation({ summary: 'Get all classrooms for current user' })
+  @ApiOkResponse({
+    description: 'List of classrooms',
+    type: [ClassroomResponseDto],
+  })
   findAll() {
     const user = { id: 1 };
     return this.service.findAll(user);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id);
-  }
-
+  // =============== FIND BY CODE =================
   @Get('by-code/:classCode')
-  findByClassCode(@Param('classCode') classCode: string) {
+  @ApiOperation({ summary: 'Get classroom by class code' })
+  @ApiParam({
+    name: 'classCode',
+    description: 'The invitation code to the classroom',
+    example: 'MATH-ABC123',
+  })
+  @ApiOkResponse({
+    description: 'Classroom found',
+    type: ClassroomResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Invalid classroom code',
+  })
+  findByClassCode(
+    @Param('classCode') classCode: string,
+  ) {
     return this.service.findByClassCode(classCode);
   }
 
+  // =============== FIND ONE =================
+  @Get(':id')
+  @ApiOperation({ summary: 'Get classroom by ID' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiOkResponse({
+    description: 'Classroom found',
+    type: ClassroomResponseDto,
+  })
+  @ApiNotFoundResponse({
+    description: 'Classroom not found',
+  })
+  findOne(
+    @Param('id') id: string,
+  ) {
+    return this.service.findOne(+id);
+  }
+
+  // =============== UPDATE =================
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a classroom' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({ type: UpdateClassroomDto })
+  @ApiOkResponse({
+    description: 'Classroom updated successfully',
+    type: ClassroomResponseDto,
+  })
   update(
-    @Param('id') id: string, 
-    @Body() dto: UpdateClassroomDto
+    @Param('id') id: string,
+    @Body() dto: UpdateClassroomDto,
   ) {
     const userId = 1;
     return this.service.update(+id, dto, userId);
   }
 
+  // =============== DELETE =================
   @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete a classroom' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiNoContentResponse({
+    description: 'Classroom deleted successfully',
+  })
+  @ApiForbiddenResponse({
+    description: 'Not allowed to delete this classroom',
+  })
   async remove(
     @Param('id') id: string,
   ) {
