@@ -4,7 +4,7 @@ import { ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 @ApiSchema({ name: 'UpdateClassroom' })
 export class UpdateClassroomDto {
   @ApiPropertyOptional({
-    example: 'Math 102',
+    example: 'Flutter 101',
     description: 'Updated human-readable classroom name',
     minLength: 2,
   })
@@ -14,7 +14,7 @@ export class UpdateClassroomDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: 'Advanced algebra class for sophomores',
+    example: 'Introductory Flutter class for freshmen',
     description: 'Updated optional classroom description',
   })
   @IsOptional()

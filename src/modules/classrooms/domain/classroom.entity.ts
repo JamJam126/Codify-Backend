@@ -1,4 +1,3 @@
-
 export class Classroom {
   public id: number;
   public classCode: string;

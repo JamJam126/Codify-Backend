@@ -21,8 +21,8 @@ import {
 } from '@nestjs/swagger';
 
 import { ClassroomService } from '../application/classroom.service';
-import { CreateClassroomDto } from '../application/dto/create-classroom.dto';
-import { UpdateClassroomDto } from '../application/dto/update-classroom.dto';
+import { CreateClassroomDto } from './dto/create-classroom.dto';
+import { UpdateClassroomDto } from './dto/update-classroom.dto';
 import { ClassroomResponseDto } from './dto/classroom-response.dto';
 
 @ApiTags('classrooms')
@@ -38,9 +38,7 @@ export class ClassroomsController {
     description: 'Classroom created successfully',
     type: ClassroomResponseDto,
   })
-  create(
-    @Body() dto: CreateClassroomDto,
-  ) {
+  create(@Body() dto: CreateClassroomDto) {
     const userId = 1; // mock user
     return this.service.create(dto, userId);
   }
@@ -63,7 +61,7 @@ export class ClassroomsController {
   @ApiParam({
     name: 'classCode',
     description: 'The invitation code to the classroom',
-    example: 'MATH-ABC123',
+    example: 'AJ24-KL3P',
   })
   @ApiOkResponse({
     description: 'Classroom found',
@@ -72,9 +70,7 @@ export class ClassroomsController {
   @ApiNotFoundResponse({
     description: 'Invalid classroom code',
   })
-  findByClassCode(
-    @Param('classCode') classCode: string,
-  ) {
+  findByClassCode(@Param('classCode') classCode: string) {
     return this.service.findByClassCode(classCode);
   }
 
@@ -89,9 +85,7 @@ export class ClassroomsController {
   @ApiNotFoundResponse({
     description: 'Classroom not found',
   })
-  findOne(
-    @Param('id') id: string,
-  ) {
+  findOne(@Param('id') id: string) {
     return this.service.findOne(+id);
   }
 
@@ -104,10 +98,7 @@ export class ClassroomsController {
     description: 'Classroom updated successfully',
     type: ClassroomResponseDto,
   })
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateClassroomDto,
-  ) {
+  update(@Param('id') id: string, @Body() dto: UpdateClassroomDto) {
     const userId = 1;
     return this.service.update(+id, dto, userId);
   }
@@ -123,9 +114,7 @@ export class ClassroomsController {
   @ApiForbiddenResponse({
     description: 'Not allowed to delete this classroom',
   })
-  async remove(
-    @Param('id') id: string,
-  ) {
+  async remove(@Param('id') id: string) {
     const userId = 1;
     await this.service.delete(+id, userId);
   }

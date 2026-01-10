@@ -5,14 +5,14 @@ export class ClassroomResponseDto {
   // @ApiProperty({ example: 1 })
   id: number;
 
-  @ApiProperty({ example: 'Math 101' })
+  @ApiProperty({ example: 'Flutter 101' })
   name: string;
 
-  @ApiProperty({ example: 'MATH-ABC123' })
+  @ApiProperty({ example: 'AJ24-KL3P' })
   classCode: string;
 
   @ApiProperty({
-    example: 'Introductory algebra class for freshmen',
+    example: 'Introductory Flutter class for freshmen',
     required: false,
   })
   description?: string;
