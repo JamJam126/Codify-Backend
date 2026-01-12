@@ -15,4 +15,14 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     for (let i = 0; i < this.items.length; i++) console.log(this.items[i].title);
     return rehydrated;
   }
+
+  async findById(id: number): Promise<Assignment | null> {
+    return this.items.find(a => a.id === id) ?? null;
+  }
+
+  async findAllBySection(sectionId: number): Promise<Assignment[]> {
+    return this.items
+      .filter(a => a.sectionId === sectionId)
+      .sort((a, b) => a.position - b.position);
+  }
 }

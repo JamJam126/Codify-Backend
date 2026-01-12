@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { AssignmentRepository } from './repositories/assignment.repository';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { Assignment } from './assignment.entity';
@@ -20,5 +20,16 @@ export class AssignmentService {
     });
 
     return this.repo.create(assignment);
+  }
+
+  async findOne(id: number): Promise<Assignment> {
+    const assignment = await this.repo.findById(id);
+    if (!assignment) throw new NotFoundException(`Assignment ${id} not found`);
+    
+    return assignment;
+  }
+
+  async findAllBySection(sectionId: number): Promise<Assignment[]> {
+    return this.repo.findAllBySection(sectionId);
   }
 }

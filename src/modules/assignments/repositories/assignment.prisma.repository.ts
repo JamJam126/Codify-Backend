@@ -29,4 +29,38 @@ export class PrismaAssignmentRepository implements AssignmentRepository {
       isPublished: result.is_published,
     });
   }
+
+	async findById(id: number): Promise<Assignment | null> {
+    const result = await this.prisma.assignment.findUnique({ where: { id } });
+    if (!result) return null;
+    
+    return Assignment.rehydrate({
+      id: result.id,
+      sectionId: result.section_id,
+      title: result.title,
+      description: result.description,
+      dueAt: result.due_at,
+      position: result.position,
+      isPublished: result.is_published,
+    });
+  }
+
+  async findAllBySection(sectionId: number): Promise<Assignment[]> {
+    const results = await this.prisma.assignment.findMany({
+      where: { section_id: sectionId },
+      orderBy: { position: 'asc' },
+    });
+		
+    return results.map(result =>
+      Assignment.rehydrate({
+        id: result.id,
+        sectionId: result.section_id,
+        title: result.title,
+        description: result.description,
+        dueAt: result.due_at,
+        position: result.position,
+        isPublished: result.is_published,
+      }),
+    );
+  }
 }
