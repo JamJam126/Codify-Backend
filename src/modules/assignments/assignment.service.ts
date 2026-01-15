@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { AssignmentRepository } from './repositories/assignment.repository';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { Assignment } from './assignment.entity';
+import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 
 @Injectable()
 export class AssignmentService {
@@ -31,5 +32,24 @@ export class AssignmentService {
 
   async findAllBySection(sectionId: number): Promise<Assignment[]> {
     return this.repo.findAllBySection(sectionId);
+  }
+
+  async update(id: number, dto: UpdateAssignmentDto): Promise<Assignment> {
+    const assignment = await this.findOne(id);
+    assignment.update(dto);
+
+    return this.repo.update(assignment);
+  }
+
+  async publish(id: number): Promise<Assignment> {
+    const assignment = await this.findOne(id);
+    assignment.publish();
+
+    return this.repo.update(assignment);
+  }
+  
+  async delete(id: number): Promise<void> {
+    await this.findOne(id);
+    await this.repo.deleteById(id);
   }
 }

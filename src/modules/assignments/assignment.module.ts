@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AssignmentController } from './assignment.controller';
 import { AssignmentService } from './assignment.service';
 import { PrismaService } from 'prisma/prisma.service';
-import { PrismaAssignmentRepository } from './repositories/assignment.prisma.repository';
+import { AssignmentPrismaRepository } from './repositories/assignment.prisma.repository';
 import { FakeAssignmentRepository } from './repositories/assignment.fake.repository';
 
 @Module({

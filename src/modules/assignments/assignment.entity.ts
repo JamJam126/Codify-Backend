@@ -55,4 +55,37 @@ export class Assignment {
     );
   }
 
+  publish(): void {
+    if (this.isPublished) 
+      throw new Error('The assignment is already published');
+
+    if (this.dueAt <= new Date()) 
+      throw new Error('Cannot publish an assignment past its due date');
+
+    this.isPublished = true;
+  }
+
+  update(props: {
+    title?: string;
+    description?: string,
+    dueAt?: Date;
+  }): void {
+    if (props.title !== undefined) {
+      if (props.title.trim().length < 2) 
+        throw new Error('Assignment title must be at least 2 characters long');
+
+      this.title = props.title;
+    }
+
+    if (props.description !== undefined) {
+      this.description = props.description;
+    }
+
+    if (props.dueAt !== undefined) {
+      if (props.dueAt <= new Date())
+        throw new Error('Cannot move due date to the past');
+
+      this.dueAt = props.dueAt;
+    }
+  }
 }

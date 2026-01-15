@@ -1,3 +1,4 @@
+import { throwError } from 'rxjs';
 import { Assignment } from '../assignment.entity';
 import { AssignmentRepository } from './assignment.repository';
 
@@ -24,5 +25,17 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     return this.items
       .filter(a => a.sectionId === sectionId)
       .sort((a, b) => a.position - b.position);
+  }
+
+  async update(assignment: Assignment): Promise<Assignment> {
+    const index = this.items.findIndex(a => a.id === assignment.id);
+    if (index === -1) throw new Error('Assignment Not Found');
+    this.items[index] = assignment;
+    
+    return assignment;
+  }
+
+  async deleteById(id: number): Promise<void> {
+    this.items = this.items.filter(a => a.id !== id);
   }
 }
