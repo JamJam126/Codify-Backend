@@ -1,9 +1,10 @@
 import express from 'express';
+import cors from "cors";
 import { codeQueue } from './queue.js';
 
 const app = express();
 app.use(express.json());
-
+app.use(cors());
 // Submit code
 app.post("/run", async (req, res) => {
   const { language, code } = req.body;
