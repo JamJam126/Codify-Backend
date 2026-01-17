@@ -51,8 +51,8 @@ export class ClassroomsController {
     type: [ClassroomResponseDto],
   })
   findAll() {
-    const user = { id: 1 };
-    return this.service.findAll(user);
+    const userId = 1 ;
+    return this.service.findAll(userId);
   }
 
   // =============== FIND BY CODE =================
@@ -100,7 +100,7 @@ export class ClassroomsController {
   })
   update(@Param('id') id: string, @Body() dto: UpdateClassroomDto) {
     const userId = 1;
-    return this.service.update(+id, dto, userId);
+    return this.service.update(+id, dto);
   }
 
   // =============== DELETE =================
@@ -116,6 +116,6 @@ export class ClassroomsController {
   })
   async remove(@Param('id') id: string) {
     const userId = 1;
-    await this.service.delete(+id, userId);
+    await this.service.delete(+id);
   }
 }

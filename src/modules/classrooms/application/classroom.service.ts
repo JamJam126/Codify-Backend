@@ -13,103 +13,57 @@ export class ClassroomService {
   ) {}
 
   async create(dto: CreateClassroomDto, userId: number): Promise<Classroom> {
-    const maxretries = 5;
-    let tries = 0;
+    const classCode = this.generateClassCode();
+    const classroom = Classroom.create({
+      classCode,
+      name: dto.name,
+      description: dto.description,
+    });
 
-    while (tries < maxretries) {
-      const classCode = this.generateClasscode();
-      tries++;
-
-      try {
-        const classroom = await this.repo.create(
-          new Classroom(0, classCode, dto.name, dto.description),
-          userId,
-        );
-
-        return classroom;
-      } catch (err: any) {
-        if (err.code === 'P2002' && err.meta?.target?.include('class_code')) {
-          continue;
-        }
-
-        throw err;
-      }
-    }
-
-    throw new Error('Failed to generate unique class code. Please try again');
+    return this.repo.create(classroom, userId);
   }
 
-  async findAll(user: { id: number }): Promise<Classroom[]> {
-    return this.repo.findAll(user);
-  }
-
-  async findOne(id: number): Promise<Classroom | null> {
+  async findOne(id: number): Promise<Classroom> {
     const classroom = await this.repo.findById(id);
-    if (!classroom) throw new NotFoundException('Classroom Not Found!');
-
+    if (!classroom) throw new NotFoundException('Classroom not found');
     return classroom;
   }
 
-  async findByClassCode(classCode: string): Promise<Classroom | null> {
-    const classroom = await this.repo.findByClassCode(classCode);
-    if (!classCode) throw new NotFoundException('Classroom Not Found!');
-
+  async findByClassCode(code: string): Promise<Classroom> {
+    const classroom = await this.repo.findByClassCode(code);
+    if (!classroom) throw new NotFoundException('Classroom not found');
     return classroom;
   }
 
-  async update(
-    id: number,
-    dto: UpdateClassroomDto,
-    userId: number,
-  ): Promise<Classroom> {
-    const record = await this.repo.findById(id);
+  async findAll(userId: number) {
+    return this.repo.findAllByUser(userId);
+  }
 
-    if (!record) throw new NotFoundException('Classroom not found.');
+  async update(id: number, dto: UpdateClassroomDto) {
+    const classroom = await this.findOne(id);
 
-    const classroom = new Classroom(
-      record.id,
-      record.classCode,
-      record.name,
-      record.description,
-      record.createdAt,
-      record.updatedAt,
-    );
-
-    if (dto.name !== undefined) {
-      classroom.rename(dto.name);
-    }
-
-    if (dto.description !== undefined) {
+    if (dto.name !== undefined) classroom.rename(dto.name);
+    if (dto.description !== undefined)
       classroom.updateDescription(dto.description);
-    }
 
-    await this.repo.update(classroom);
-
-    return classroom;
+    return this.repo.update(classroom);
   }
 
-  async delete(id: number, userId: number): Promise<void> {
-    const record = await this.repo.findById(id);
-
-    if (!record) throw new NotFoundException('Classroom not found!');
-
+  async delete(id: number) {
+    await this.findOne(id);
     await this.repo.deleteById(id);
   }
 
-  private generateClasscode(): string {
+  private generateClassCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
-    function randomChunk(length: number): string {
-      let result = '';
-      const bytes = randomBytes(length);
-      for (let i = 0; i < length; i++) {
-        result += chars[bytes[i] % chars.length];
-      }
-
-      return result;
-    }
-
     // XXXX-XXXX FORMAT
-    return `${randomChunk(4)}-${randomChunk(4)}`;
+    return `${this.chunk(chars, 4)}-${this.chunk(chars, 4)}`;
+  }
+
+  private chunk(chars: string, len: number) {
+    return Array.from({ length: len })
+      .map(() => chars[Math.floor(Math.random() * chars.length)])
+      .join('');
   }
 }
