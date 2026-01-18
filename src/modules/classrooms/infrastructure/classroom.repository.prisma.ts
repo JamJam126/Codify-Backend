@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from 'prisma/prisma.service';
 import { ClassroomRepository } from '../domain/classroom.repository';
 import { Classroom } from '../domain/classroom.entity';
-import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class ClassroomRepositoryPrisma implements ClassroomRepository {
@@ -28,7 +28,14 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
       return created;
     });
 
-    return this.toDomain(result);
+    return Classroom.rehydrate({
+      id: result.id,
+      classCode: result.class_code,
+      name: result.name,
+      description: result.description ?? undefined,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    });
   }
 
   async findAllByUser(userId: number): Promise<Classroom[]> {
@@ -36,19 +43,46 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
       where: { users: { some: { user_id: userId } } },
     });
 
-    return results.map(this.toDomain);
+    return results.map((r) =>
+      Classroom.rehydrate({
+        id: r.id,
+        classCode: r.class_code,
+        name: r.name,
+        description: r.description ?? undefined,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      })
+    );
   }
 
   async findById(id: number): Promise<Classroom | null> {
     const result = await this.prisma.classroom.findUnique({ where: { id } });
-    return result ? this.toDomain(result) : null;
+    if (!result) return null;
+
+    return Classroom.rehydrate({
+      id: result.id,
+      classCode: result.class_code,
+      name: result.name,
+      description: result.description ?? undefined,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    });
   }
 
   async findByClassCode(classCode: string): Promise<Classroom | null> {
     if (!classCode) return null;
 
     const result = await this.prisma.classroom.findUnique({ where: { class_code: classCode } });
-    return result ? this.toDomain(result) : null;
+    if (!result) return null;
+
+    return Classroom.rehydrate({
+      id: result.id,
+      classCode: result.class_code,
+      name: result.name,
+      description: result.description ?? undefined,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    });
   }
 
   async update(classroom: Classroom): Promise<Classroom> {
@@ -61,21 +95,17 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
       },
     });
 
-    return this.toDomain(result);
+    return Classroom.rehydrate({
+      id: result.id,
+      classCode: result.class_code,
+      name: result.name,
+      description: result.description ?? undefined,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+    });
   }
 
   async deleteById(id: number): Promise<void> {
     await this.prisma.classroom.delete({ where: { id } });
-  }
-
-  private toDomain(raw: any): Classroom {
-    return Classroom.rehydrate({
-      id: raw.id,
-      classCode: raw.class_code,
-      name: raw.name,
-      description: raw.description ?? undefined,
-      createdAt: raw.created_at,
-      updatedAt: raw.updated_at,
-    });
   }
 }

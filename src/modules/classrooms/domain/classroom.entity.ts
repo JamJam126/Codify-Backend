@@ -15,14 +15,15 @@ export class Classroom {
   }): Classroom {
     if (props.name.trim().length < 2) 
       throw new Error('Name too short');
+    const now = new Date();
 
     return new Classroom(
       null, 
       props.classCode, 
       props.name, 
       props.description, 
-      new Date(), 
-      new Date()
+      now, 
+      now
     );
   }
 
