@@ -26,6 +26,7 @@ import { UpdateClassroomDto } from './dto/update-classroom.dto';
 import { AddMemberDto } from './dto/add-member.dto';
 import { ClassroomResponseDto } from './dto/classroom-response.dto';
 import { Role } from '../domain/role.enum';
+import { ClassroomMemberResponseDto } from './dto/classroom-member-response.dto';
 
 @ApiTags('classrooms')
 @Controller('classrooms')
@@ -77,9 +78,9 @@ export class ClassroomsController {
   }
 
   // =============== FIND ONE =================
-  @Get(':id')
+  @Get(':classroomId')
   @ApiOperation({ summary: 'Get classroom by ID' })
-  @ApiParam({ name: 'id', example: 1 })
+  @ApiParam({ name: 'classroomId', example: 1 })
   @ApiOkResponse({
     description: 'Classroom found',
     type: ClassroomResponseDto,
@@ -87,45 +88,49 @@ export class ClassroomsController {
   @ApiNotFoundResponse({
     description: 'Classroom not found',
   })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('classroomId') id: string) {
     return this.service.findOne(+id);
   }
 
   // =============== UPDATE =================
-  @Patch(':id')
+  @Patch(':classroomId')
   @ApiOperation({ summary: 'Update a classroom' })
-  @ApiParam({ name: 'id', example: 1 })
+  @ApiParam({ name: 'classroomId', example: 1 })
   @ApiBody({ type: UpdateClassroomDto })
   @ApiOkResponse({
     description: 'Classroom updated successfully',
     type: ClassroomResponseDto,
   })
-  update(@Param('id') id: string, @Body() dto: UpdateClassroomDto) {
+  update(@Param('classroomId') id: string, @Body() dto: UpdateClassroomDto) {
     const userId = 1;
     return this.service.update(+id, dto);
   }
 
   // =============== DELETE =================
-  @Delete(':id')
+  @Delete(':classroomId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Delete a classroom' })
-  @ApiParam({ name: 'id', example: 1 })
+  @ApiParam({ name: 'classroomId', example: 1 })
   @ApiNoContentResponse({
     description: 'Classroom deleted successfully',
   })
   @ApiForbiddenResponse({
     description: 'Not allowed to delete this classroom',
   })
-  async remove(@Param('id') id: string) {
+  async remove(@Param('classroomId') id: string) {
     const userId = 1;
     await this.service.delete(+id);
   }
 
   // =============== MEMBERS =================
-
-  @Post(':id/members')
+  @Post(':classroomId/members')
+  @ApiOperation({ summary: 'Add member to classroom' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiBody({ type: AddMemberDto })
+  @ApiNoContentResponse({ description: 'Member added successfully' })
+  @ApiForbiddenResponse({ description: 'Only admins can add members' })
   async addMember(
-    @Param('id') id: string,
+    @Param('classroomId') id: string,
     @Body() dto: AddMemberDto,
   ) {
     const requesterId = 1;
@@ -137,18 +142,34 @@ export class ClassroomsController {
     );
   }
 
-  @Delete(':id/members/:userId')
+  @Delete(':classroomId/members/:userId')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Remove member from classroom' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'userId', example: 2 })
+  @ApiNoContentResponse({ description: 'Member removed successfully' })
+  @ApiForbiddenResponse({ description: 'Only admins can remove members' })
   async removeMember(
-    @Param('id') id: string,
+    @Param('classroomId') id: string,
     @Param('userId') userId: string,
   ) {
     const requesterId = 1;
     await this.service.removeMember(+id, requesterId, +userId);
   }
 
-  @Patch(':id/members/:userId/role')
+  @Patch(':classroomId/members/:userId/role')
+  @ApiOperation({ summary: 'Change member role' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'userId', example: 2 })
+  @ApiBody({
+    schema: {
+      properties: {
+        role: { example: 'ADMIN' },
+      },
+    },
+  })
   async changeMemberRole(
-    @Param('id') id: string,
+    @Param('classroomId') id: string,
     @Param('userId') userId: string,
     @Body('role') role: Role,
   ) {
@@ -161,12 +182,19 @@ export class ClassroomsController {
     );
   }
 
-  @Get(':id/members')
-  async listMembers(@Param('id') id: string) {
+  @Get(':classroomId/members')
+  @ApiOperation({ summary: 'List classroom members' })
+  @ApiOkResponse({ description: 'List of classroom members', type: [ClassroomMemberResponseDto] })
+  async listMembers(@Param('classroomId') id: string) {
     return this.service.listMembers(+id);
   }
 
   @Get(':classroomId/members/:userId')
+  @ApiOperation({ summary: 'Get a specific classroom member' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'userId', example: 2 })
+  @ApiOkResponse({ description: 'Member found', type: ClassroomMemberResponseDto })
+  @ApiNotFoundResponse({ description: 'Member not found' })
   async getMember(
     @Param('classroomId') id: string, 
     @Param('userId') userId: string) 
