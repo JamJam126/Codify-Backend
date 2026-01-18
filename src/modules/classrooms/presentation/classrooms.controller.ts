@@ -23,7 +23,9 @@ import {
 import { ClassroomService } from '../application/classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
+import { AddMemberDto } from './dto/add-member.dto';
 import { ClassroomResponseDto } from './dto/classroom-response.dto';
+import { Role } from '../domain/role.enum';
 
 @ApiTags('classrooms')
 @Controller('classrooms')
@@ -117,5 +119,58 @@ export class ClassroomsController {
   async remove(@Param('id') id: string) {
     const userId = 1;
     await this.service.delete(+id);
+  }
+
+  // =============== MEMBERS =================
+
+  @Post(':id/members')
+  async addMember(
+    @Param('id') id: string,
+    @Body() dto: AddMemberDto,
+  ) {
+    const requesterId = 1;
+    await this.service.addMember(
+      +id,
+      requesterId,
+      dto.userId,
+      dto.role as Role,
+    );
+  }
+
+  @Delete(':id/members/:userId')
+  async removeMember(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+  ) {
+    const requesterId = 1;
+    await this.service.removeMember(+id, requesterId, +userId);
+  }
+
+  @Patch(':id/members/:userId/role')
+  async changeMemberRole(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body('role') role: Role,
+  ) {
+    const requesterId = 1;
+    await this.service.changeMemberRole(
+      +id,
+      requesterId,
+      +userId,
+      role,
+    );
+  }
+
+  @Get(':id/members')
+  async listMembers(@Param('id') id: string) {
+    return this.service.listMembers(+id);
+  }
+
+  @Get(':classroomId/members/:userId')
+  async getMember(
+    @Param('classroomId') id: string, 
+    @Param('userId') userId: string) 
+  {
+    return this.service.getMember(+id, +userId);
   }
 }
