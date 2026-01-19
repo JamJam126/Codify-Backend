@@ -80,8 +80,13 @@ model Section {
 model Assignment {
   id         Int       @id @default(autoincrement())
   section_id Int
+
   title      String
   description String    @db.Text
+  due_at        DateTime
+  is_published  Boolean   @default(false)
+  position      Int
+
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
 
