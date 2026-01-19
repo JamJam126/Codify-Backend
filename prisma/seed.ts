@@ -104,7 +104,10 @@ async function main() {
         section_id: section.id,
         title: "Basic Challenge",
         description: "Introductory coding assignment.",
-      },
+        due_at: new Date('2026-01-20T23:59:59Z'), 
+        is_published: false,
+        position: 1,         
+      } ,
     });
 
     const challenge = await prisma.codingChallenge.create({
