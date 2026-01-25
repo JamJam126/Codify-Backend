@@ -27,18 +27,28 @@ export class ClassroomService {
       description: dto.description,
     });
 
-    return this.repo.create(classroom, userId);
+    try {
+      return this.repo.create(classroom, userId);
+    } catch (e) {
+      if (e.code === '23505') {
+        throw new ConflictException('Classroom Code already exist');
+      }
+
+      throw e;
+    }
   }
 
   async findOne(id: number): Promise<Classroom> {
     const classroom = await this.repo.findById(id);
     if (!classroom) throw new NotFoundException('Classroom not found');
+
     return classroom;
   }
 
   async findByClassCode(code: string): Promise<Classroom> {
     const classroom = await this.repo.findByClassCode(code);
     if (!classroom) throw new NotFoundException('Classroom not found');
+    
     return classroom;
   }
 
@@ -64,21 +74,19 @@ export class ClassroomService {
   async addMember(
     classroomId: number,
     requesterId: number,
-    userId: number,
-    role: Role
+    dto: AddMemberDto
   ) {
     await this.findOne(classroomId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) throw new ForbiddenException('Only admin can add members');
 
-    const existing = await this.memberRepo.findMember(classroomId, userId);
-    // if (existing) throw new Error('User already in classroom');
+    const existing = await this.memberRepo.findMember(classroomId, dto.userId);
     if (existing) throw new ConflictException('User already in classroom');
 
     await this.memberRepo.addMember(
       classroomId,
-      new ClassroomMember(userId, role)
+      new ClassroomMember(dto.userId, dto.role)
     );
   }
 
@@ -91,6 +99,15 @@ export class ClassroomService {
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) throw new ForbiddenException('Only admin can remove members');
+
+    if (requesterId === userId) {
+      throw new ConflictException('Admin cannot remove themselves');
+    }
+
+    const member = await this.memberRepo.findMember(classroomId, userId);
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
 
     await this.memberRepo.removeMember(classroomId, userId);
   }
@@ -106,15 +123,28 @@ export class ClassroomService {
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) throw new ForbiddenException('Only admin can change roles');
 
+    const member = await this.memberRepo.findMember(classroomId, userId);
+    if (!member) throw new NotFoundException('Member not found');
+
+    if (member.role === role) {
+      throw new ConflictException('User already has this role');
+    }
+
     await this.memberRepo.updateRole(classroomId, userId, role);
   }
 
   async listMembers(classroomId: number): Promise<ClassroomMember[]> {
+    await this.findOne(classroomId);
     return this.memberRepo.findMembers(classroomId);
   }
 
   async getMember(classroomId: number, userId: number) {
-    return this.memberRepo.findMember(classroomId, userId);
+    await this.findOne(classroomId);
+
+    const member = await this.memberRepo.findMember(classroomId, userId);
+    if (!member) throw new NotFoundException('Member not found');
+
+    return member;
   }
 
   private generateClassCode(): string {
