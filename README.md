@@ -1,6 +1,6 @@
-# EduAI GitHub Assistant - Backend
+# Codify - Backend
 
-This repository contains the full backend system for the EduAI platform.
+This repository contains the full backend system for Codify.
 It includes user authentication and management, assignment handling, GitHub integration, code execution, AI evaluation, and all supporting modules, built with NestJS, Prisma, and PostgreSQL.
 
 The codebase follows a modular architecture and provides documentation for structure, architecture, and development guidelines.
@@ -25,25 +25,100 @@ Make sure you have the following installed:
 
 ## 📦 Installation
 
-Install project dependencies:
+1. Clone the project
+
+```bash
+git clone https://github.com/JamJam126/Codify-Backend.git
+cd EduAI-GitHub-Assistant-Backend
+```
+
+2. Install project dependencies:
 ```bash
 pnpm install
 ```
 
-Install additional dependencies for the code runner:
+3. Install additional dependencies for the code runner:
 ```bash
 pnpm install bullmq dockerode redis uuid
 pnpm install -D @types/dockerode
 ```
+## 🔐 Environment Variables
+
+Create a `.env` file from the example:
+```bash
+cp .env.example .env
+```
+
+Update variables as needed:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/eduai"
+JWT_SECRET="your-secret-key"
+REDIS_HOST="127.0.0.1"
+REDIS_PORT=6379
+PORT=3000
+```
+Prisma **requires** `DATABASE_URL` to be defined.
 
 ## 🗄 Database Setup
 
-Run migrations to initialize the database:
+### Verify schema exists, check folder structure:
+
+```
+src/
+  prisma/
+    schema.prisma
+```
+
+### If the database does **not yet exist**, create it manually in PostgreSQL:
+
+```bash
+createdb codify
+```
+
+Or inside `psql`:
+
+```sql
+CREATE DATABASE codify;
+```
+
+### Generate Prisma
+```bash
+npx prisma generate
+```
+This step **reads your schema.prisma** and creates:
+
+* DB client
+* TS types (User, Post, etc.)
+
+Verify:
+```bash
+node_modules/@prisma/client/
+```
+
+### Apply Migration
+If the project already contains `/prisma/migrations/**`, run:
+
 ```bash
 npx prisma migrate dev
 ```
 
-Seed the database with initial data:
+This:
+
+1. Compares schema ↔ DB
+2. Applies needed SQL
+3. Regenerates Prisma client
+
+If the migrations folder is empty → the project creator didn’t include them, so you must run:
+
+```bash
+npx prisma db push
+```
+
+(creates tables without migrations).
+
+> ⚠ Never run db push if migrations already exist!
+
+### Seed the database with initial data (recommended):
 ```bash
 npx prisma db seed
 ```
@@ -104,26 +179,11 @@ code-runner-c    latest    abc123def456    2 minutes ago    1.2GB
 pnpm start:dev
 ```
 
-You should see logs indicating the worker has started:
-```
-[CodeRunnerProcessor] Initializing CodeRunner Worker...
-```
+## 📑 API Documentation (Swagger)
 
-## 🔐 Environment Variables
+Swagger (OpenAPI) documentation is available once the server is running:
 
-Create a `.env` file from the example:
-```bash
-cp .env.example .env
-```
-
-Update variables as needed:
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/eduai"
-JWT_SECRET="your-secret-key"
-REDIS_HOST="127.0.0.1"
-REDIS_PORT=6379
-PORT=3000
-```
+http://localhost:3000/api
 
 ## 🧪 Testing Code Runner
 
@@ -170,11 +230,33 @@ docker stop redis
 docker rm redis
 ```
 
-## 🧱 Project Structure
+## 🔁 Flow Summary
 
-See [docs/ORGANIZATION.md](docs/ORGANIZATION.md) for full explanation of folders and modules.
+After cloning the project, run these commands in order:
 
-## 🧩 Architecture Overview
+```bash
+pnpm install                  # Install dependencies
+npx prisma generate           # Generate Prisma client & TS types
+npx prisma migrate dev        # Apply migrations & create tables (or use db push if no migrations)
+pnpm start:dev                # Start the development server
+```
+
+
+## 📘 Common Prisma Workflows
+
+| Situation / Action | Command | Notes |
+|-------------------|---------|-------|
+| First-time database setup             | `npx prisma migrate dev` | Applies migrations & creates DB tables |
+| No migrations exist                   | `npx prisma db push`     | Creates tables directly from schema without migrations |
+| Schema (`schema.prisma`) changed      | `npx prisma migrate dev` | Generates new migration and updates DB |
+| Database changed manually             | `npx prisma db pull`     | Updates `schema.prisma` to match DB |
+| Prisma client missing / types missing | `npx prisma generate`    | Regenerates client without touching DB |
+
+
+## 🧱 Project Structure and Architecture Overview
+
+See [docs/ORGANIZATION.md](docs/ORGANIZATION.md) for full explanation of folders and modules. 
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for backend architecture and module flow.
 
+---
