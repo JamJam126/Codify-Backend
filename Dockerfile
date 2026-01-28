@@ -1,11 +1,27 @@
-# Dockerfile.c
-FROM gcc:latest
+FROM node:20-alpine
 
-# Set working directory inside the container
-WORKDIR /code
+# Install GCC (needed for some deps)
+RUN apk add --no-cache gcc g++ make
 
-# Copy everything from your current folder into /code
-COPY . /code
+WORKDIR /app
 
-# Keep container alive (so Node.js can connect and run commands)
-CMD ["sleep", "infinity"]
+# Copy package.json & Prisma schema first for caching
+COPY package*.json ./
+COPY prisma ./prisma/
+
+# Install dependencies
+RUN npm install
+
+# Generate Prisma client before building
+RUN npx prisma generate
+
+# Copy the rest of the source code
+COPY . .
+
+# Build the TypeScript project
+RUN npm run build
+
+EXPOSE 4000
+
+# Start production server
+CMD ["npm", "run", "start:prod"]
