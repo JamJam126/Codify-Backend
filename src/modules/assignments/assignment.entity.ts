@@ -16,14 +16,6 @@ export class Assignment {
     dueAt: Date;
     position: number;
   }): Assignment {
-    if (props.title.trim().length < 2) {
-      throw new Error('Assignment title must be at least 2 characters long');
-    }
-
-    if (props.dueAt <= new Date()) {
-      throw new Error('Assignment due date must be in the future');
-    }
-
     return new Assignment(
       null,
       props.sectionId,

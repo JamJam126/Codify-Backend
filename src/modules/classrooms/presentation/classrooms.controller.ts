@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  ParseIntPipe,
   Param,
   Patch,
   Post,
@@ -88,8 +89,8 @@ export class ClassroomsController {
   @ApiNotFoundResponse({
     description: 'Classroom not found',
   })
-  findOne(@Param('classroomId') id: string) {
-    return this.service.findOne(+id);
+  findOne(@Param('classroomId', ParseIntPipe) classroomId: number) {
+    return this.service.findOne(classroomId);
   }
 
   // =============== UPDATE =================
@@ -101,10 +102,14 @@ export class ClassroomsController {
     description: 'Classroom updated successfully',
     type: ClassroomResponseDto,
   })
-  update(@Param('classroomId') id: string, @Body() dto: UpdateClassroomDto) {
-    const userId = 1;
-    return this.service.update(+id, dto);
+  @Patch(':classroomId')
+  update(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Body() dto: UpdateClassroomDto,
+  ) {
+    return this.service.update(classroomId, dto);
   }
+
 
   // =============== DELETE =================
   @Delete(':classroomId')
@@ -117,9 +122,9 @@ export class ClassroomsController {
   @ApiForbiddenResponse({
     description: 'Not allowed to delete this classroom',
   })
-  async remove(@Param('classroomId') id: string) {
+  async remove(@Param('classroomId', ParseIntPipe) id: number) {
     const userId = 1;
-    await this.service.delete(+id);
+    await this.service.delete(id);
   }
 
   // =============== MEMBERS =================
@@ -130,15 +135,14 @@ export class ClassroomsController {
   @ApiNoContentResponse({ description: 'Member added successfully' })
   @ApiForbiddenResponse({ description: 'Only admins can add members' })
   async addMember(
-    @Param('classroomId') id: string,
+    @Param('classroomId', ParseIntPipe) classroomId: number,
     @Body() dto: AddMemberDto,
   ) {
     const requesterId = 1;
     await this.service.addMember(
-      +id,
-      requesterId,
-      dto.userId,
-      dto.role as Role,
+      classroomId, 
+      requesterId, 
+      dto
     );
   }
 
@@ -150,11 +154,11 @@ export class ClassroomsController {
   @ApiNoContentResponse({ description: 'Member removed successfully' })
   @ApiForbiddenResponse({ description: 'Only admins can remove members' })
   async removeMember(
-    @Param('classroomId') id: string,
-    @Param('userId') userId: string,
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
   ) {
     const requesterId = 1;
-    await this.service.removeMember(+id, requesterId, +userId);
+    await this.service.removeMember(classroomId, requesterId, userId);
   }
 
   @Patch(':classroomId/members/:userId/role')
@@ -169,24 +173,26 @@ export class ClassroomsController {
     },
   })
   async changeMemberRole(
-    @Param('classroomId') id: string,
-    @Param('userId') userId: string,
-    @Body('role') role: Role,
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() dto: { role: Role },
   ) {
     const requesterId = 1;
     await this.service.changeMemberRole(
-      +id,
+      classroomId,
       requesterId,
-      +userId,
-      role,
-    );
+      userId,
+      dto.role,
+    )
   }
 
   @Get(':classroomId/members')
   @ApiOperation({ summary: 'List classroom members' })
   @ApiOkResponse({ description: 'List of classroom members', type: [ClassroomMemberResponseDto] })
-  async listMembers(@Param('classroomId') id: string) {
-    return this.service.listMembers(+id);
+  async listMembers(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+  ) {
+    return this.service.listMembers(classroomId);
   }
 
   @Get(':classroomId/members/:userId')
@@ -196,9 +202,9 @@ export class ClassroomsController {
   @ApiOkResponse({ description: 'Member found', type: ClassroomMemberResponseDto })
   @ApiNotFoundResponse({ description: 'Member not found' })
   async getMember(
-    @Param('classroomId') id: string, 
-    @Param('userId') userId: string) 
-  {
-    return this.service.getMember(+id, +userId);
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+  ) {
+    return this.service.getMember(classroomId, userId);
   }
 }

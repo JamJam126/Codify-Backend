@@ -18,7 +18,6 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     });
     this.items.push(rehydrated);
 
-    for (let i = 0; i < this.items.length; i++) console.log(this.items[i].title);
     return rehydrated;
   }
 

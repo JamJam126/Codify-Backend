@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { AssignmentRepository } from './repositories/assignment.repository';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { Assignment } from './assignment.entity';
@@ -12,13 +12,18 @@ export class AssignmentService {
   ) {}
 
   create(dto: CreateAssignmentDto): Promise<Assignment> {
-    const assignment = Assignment.create({
-      sectionId: dto.sectionId,
-      title: dto.title,
-      description: dto.description,
-      dueAt: dto.dueAt,
-      position: dto.position,
-    });
+    let assignment:Assignment
+    try {
+      assignment = Assignment.create({
+        sectionId: dto.sectionId,
+        title: dto.title,
+        description: dto.description,
+        dueAt: dto.dueAt,
+        position: dto.position,
+      });
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
 
     return this.repo.create(assignment);
   }

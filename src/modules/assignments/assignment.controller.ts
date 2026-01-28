@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
+import { 
+  Body, 
+  Controller, 
+  Delete, 
+  Get, 
+  HttpCode, 
+  Param, 
+  Patch, 
+  Post, 
+  ParseIntPipe 
+} from '@nestjs/common';
 import { AssignmentService } from './assignment.service';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
@@ -13,26 +23,31 @@ export class AssignmentController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
+  }
+
+  @Get('section/:id')
+  findBySection(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findAllBySection(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateAssignmentDto
   ) {
-    return this.service.update(+id, dto);
+    return this.service.update(id, dto);
   }
 
   @Patch(':id/publish')
-  publish(@Param('id') id: string) {
-    return this.service.publish(+id);
+  publish(@Param('id', ParseIntPipe) id: number) {
+    return this.service.publish(id);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id') id: string) {
-    return this.service.delete(+id);
+  delete(@Param('id', ParseIntPipe) id: number) {
+    return this.service.delete(id);
   }
 }

@@ -75,7 +75,7 @@ export class ClassroomService {
     classroomId: number,
     requesterId: number,
     dto: AddMemberDto
-  ) {
+  ): Promise<ClassroomMember> {
     await this.findOne(classroomId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
@@ -84,10 +84,12 @@ export class ClassroomService {
     const existing = await this.memberRepo.findMember(classroomId, dto.userId);
     if (existing) throw new ConflictException('User already in classroom');
 
-    await this.memberRepo.addMember(
+    const addedMember = await this.memberRepo.addMember(
       classroomId,
       new ClassroomMember(dto.userId, dto.role)
     );
+
+    return addedMember;
   }
 
   async removeMember(
@@ -117,7 +119,7 @@ export class ClassroomService {
     requesterId: number,
     userId: number,
     role: Role
-  ) {
+  ): Promise<ClassroomMember> {
     await this.findOne(classroomId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
@@ -130,7 +132,8 @@ export class ClassroomService {
       throw new ConflictException('User already has this role');
     }
 
-    await this.memberRepo.updateRole(classroomId, userId, role);
+    const updated = await this.memberRepo.updateRole(classroomId, userId, role);
+    return updated;
   }
 
   async listMembers(classroomId: number): Promise<ClassroomMember[]> {
