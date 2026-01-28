@@ -185,6 +185,43 @@ Swagger (OpenAPI) documentation is available once the server is running:
 
 http://localhost:3000/api
 
+## 🧪 Unit Tests
+
+### Test Location
+- All unit tests are co-located with the module they test:
+```
+src/
+  modules/
+    classrooms/
+      classroom.service.ts
+      classroom.service.spec.ts      # tests for classroom.service.ts
+      classroom.controller.ts
+      classroom.controller.spec.ts   # tests for classroom.controller.ts
+    assignments/
+      assignment.service.ts
+      assignment.service.spec.ts     # tests for assignment.service.ts
+```
+
+### Running Unit Tests
+Make sure dependencies are installed:
+
+```bash
+pnpm install
+```
+
+Run the unit tests:
+```bash
+pnpm test
+```
+
+Or run in watch mode (reruns on file change):
+```bash
+pnpm test:watch
+```
+Notes
+
+Unit tests use fake repositories or mocks, so no database or Redis setup is needed.
+
 ## 🧪 Testing Code Runner
 
 Submit a code execution job:
