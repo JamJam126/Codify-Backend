@@ -31,7 +31,7 @@ describe('AssignmentController (Unit Tests)', () => {
     const response = await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 'Assignment 1',
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -49,17 +49,18 @@ describe('AssignmentController (Unit Tests)', () => {
     await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       })
       .expect(400);
   });
 
-  it('TC-CA-03: Missing sectionId', async () => {
+  it('TC-CA-03: Missing classroomId', async () => {
     await request(app.getHttpServer())
       .post('/assignments')
       .send({
+        sectionId: 1,
         title: 'Assignment 1',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       })
@@ -77,7 +78,7 @@ describe('AssignmentController (Unit Tests)', () => {
     await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 123,
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -90,7 +91,7 @@ describe('AssignmentController (Unit Tests)', () => {
     const created = await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 'Test Assignment',
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -119,11 +120,11 @@ describe('AssignmentController (Unit Tests)', () => {
   });
 
   /* ===================== TC-GS ===================== */
-  it('TC-GS-01: Fetch assignments with valid sectionId', async () => {
+  it('TC-GS-01: Fetch assignments with valid classroomId', async () => {
     await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 'Test Assignment',
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -131,21 +132,21 @@ describe('AssignmentController (Unit Tests)', () => {
       })
       .expect(201);
 
-    const response = await request(app.getHttpServer()).get('/assignments/section/1').expect(200);
+    const response = await request(app.getHttpServer()).get('/assignments/classroom/1').expect(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
 
-  it('TC-GS-02: Non-existing sectionId', async () => {
+  it('TC-GS-02: Non-existing classroomId', async () => {
     const response = await request(app.getHttpServer())
-      .get('/assignments/section/999')
+      .get('/assignments/classroom/999')
       .expect(200);
 
     expect(response.body).toEqual([]);
   });
 
-  it('TC-GS-03: Invalid sectionId format', async () => {
+  it('TC-GS-03: Invalid classroomId format', async () => {
     await request(app.getHttpServer())
-      .get('/assignments/section/abc')
+      .get('/assignments/classroom/abc')
       .expect(400);
   });
 
@@ -154,7 +155,7 @@ describe('AssignmentController (Unit Tests)', () => {
     const created = await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 'Test Assignment',
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -196,7 +197,7 @@ describe('AssignmentController (Unit Tests)', () => {
     const created = await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 'Draft Assignment',
         description: '',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -228,7 +229,7 @@ describe('AssignmentController (Unit Tests)', () => {
     const created = await request(app.getHttpServer())
       .post('/assignments')
       .send({
-        sectionId: 1,
+        classroomId: 1,
         title: 'To Delete',
         description: 'Desc',
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
