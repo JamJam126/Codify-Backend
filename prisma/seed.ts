@@ -7,16 +7,16 @@ async function main() {
   const [admin, instructor, student] = await Promise.all([
     prisma.user.create({
       data: {
-        name: "Alice Admin",
+        name: "Alice Owner",
         email: "alice@school.com",
-        hashed_password: "hashed_admin_pw",
+        hashed_password: "hashed_owner_pw",
       },
     }),
     prisma.user.create({
       data: {
         name: "Bob Instructor",
         email: "bob@school.com",
-        hashed_password: "hashed_instructor_pw",
+        hashed_password: "hashed_teacher_pw",
       },
     }),
     prisma.user.create({
@@ -101,10 +101,11 @@ async function main() {
 
     const assignment = await prisma.assignment.create({
       data: {
+        classroom_id: classroom.id,
         section_id: section.id,
         title: "Basic Challenge",
         description: "Introductory coding assignment.",
-        due_at: new Date('2026-01-20T23:59:59Z'), 
+        due_at: new Date('2030-01-20T23:59:59Z'), 
         is_published: false,
         position: 1,         
       } ,

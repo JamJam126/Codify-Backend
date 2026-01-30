@@ -12,7 +12,7 @@ import { FakeAssignmentRepository } from './repositories/assignment.fake.reposit
     AssignmentService,
     {
       provide: 'ASSIGNMENT_REPOSITORY',
-      useClass: FakeAssignmentRepository
+      useClass: AssignmentPrismaRepository
     }
   ],
 })

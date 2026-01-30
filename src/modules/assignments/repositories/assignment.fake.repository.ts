@@ -9,6 +9,7 @@ export class FakeAssignmentRepository implements AssignmentRepository {
   async create(assignment: Assignment): Promise<Assignment> {
     const rehydrated = Assignment.rehydrate({
       id: this.idSeq++,
+      classroomId: assignment.classroomId,
       sectionId: assignment.sectionId,
       title: assignment.title,
       description: assignment.description,
@@ -25,6 +26,7 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     const found = this.items.find(a => a.id === id);
     return found ? Assignment.rehydrate({
       id: found.id!,
+      classroomId: found.classroomId,
       sectionId: found.sectionId,
       title: found.title,
       description: found.description,
@@ -36,12 +38,32 @@ export class FakeAssignmentRepository implements AssignmentRepository {
   }
 
   async findAllBySection(sectionId: number): Promise<Assignment[]> {
+    throw new Error('Method not implemented.');
+    // return this.items
+    //   .filter(a => a.sectionId === sectionId)
+    //   .sort((a, b) => a.position - b.position)
+    //   .map((a) => 
+    //     Assignment.rehydrate({
+    //       id: a.id!,
+    //       classroomId: assignment.classroomId,
+    //       sectionId: a.sectionId,
+    //       title: a.title,
+    //       description: a.description,
+    //       dueAt: a.dueAt,
+    //       position: a.position,
+    //       isPublished: a.isPublished,
+    //     })
+    //   )
+  }
+
+  async findAllByClassroom(classroomId: number): Promise<Assignment[]> {
     return this.items
-      .filter(a => a.sectionId === sectionId)
+      .filter(a => a.classroomId === classroomId)
       .sort((a, b) => a.position - b.position)
       .map((a) => 
         Assignment.rehydrate({
           id: a.id!,
+          classroomId: classroomId,
           sectionId: a.sectionId,
           title: a.title,
           description: a.description,
@@ -57,6 +79,7 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     if (index === -1) throw new Error('Assignment Not Found');
     const updated = Assignment.rehydrate({
       id: assignment.id!,
+      classroomId: assignment.classroomId,
       sectionId: assignment.sectionId,
       title: assignment.title,
       description: assignment.description,

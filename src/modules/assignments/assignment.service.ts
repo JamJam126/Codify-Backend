@@ -15,7 +15,8 @@ export class AssignmentService {
     let assignment:Assignment
     try {
       assignment = Assignment.create({
-        sectionId: dto.sectionId,
+        classroomId: dto.classroomId,
+        sectionId: 1,
         title: dto.title,
         description: dto.description,
         dueAt: dto.dueAt,
@@ -35,8 +36,12 @@ export class AssignmentService {
     return assignment;
   }
 
-  async findAllBySection(sectionId: number): Promise<Assignment[]> {
-    return this.repo.findAllBySection(sectionId);
+  // async findAllBySection(sectionId: number): Promise<Assignment[]> {
+  //   return this.repo.findAllBySection(sectionId);
+  // }
+
+  async findAllByClassroom(sectionId: number): Promise<Assignment[]> {
+    return this.repo.findAllByClassroom(sectionId);
   }
 
   async update(id: number, dto: UpdateAssignmentDto): Promise<Assignment> {

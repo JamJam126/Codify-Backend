@@ -16,13 +16,22 @@ import { IsFutureDate } from '../../../common/validator/is-future-date.validator
 
 @ApiSchema({ name: 'CreateAssignment' })
 export class CreateAssignmentDto {
+    
   @ApiProperty({
     example: 3,
-    description: 'Section ID the assignment belongs to',
+    description: 'Classroom ID the assignment belongs to',
   })
   @IsNotEmpty()
   @IsInt()
-  sectionId: number;
+  classroomId: number;
+
+  // @ApiProperty({
+  //   example: 3,
+  //   description: 'Section ID the assignment belongs to',
+  // })
+  // @IsNotEmpty()
+  // @IsInt()
+  // sectionId: number;
 
   @ApiProperty({
     example: 'Homework 1',

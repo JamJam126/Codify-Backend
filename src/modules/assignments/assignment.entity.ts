@@ -1,6 +1,7 @@
 export class Assignment {
   constructor(
     public readonly id: number | null,
+    public classroomId: number,
     public sectionId: number,
     public title: string,
     public description: string,
@@ -10,6 +11,7 @@ export class Assignment {
   ) {}
 
   static create(props: {
+    classroomId: number;
     sectionId: number;
     title: string;
     description: string;
@@ -18,6 +20,7 @@ export class Assignment {
   }): Assignment {
     return new Assignment(
       null,
+      props.classroomId,
       props.sectionId,
       props.title,
       props.description,
@@ -29,6 +32,7 @@ export class Assignment {
     
   static rehydrate(props: {
     id: number;
+    classroomId: number;
     sectionId: number;
     title: string;
     description: string;
@@ -38,6 +42,7 @@ export class Assignment {
   }): Assignment {
     return new Assignment(
       props.id,
+      props.classroomId,
       props.sectionId,
       props.title,
       props.description,

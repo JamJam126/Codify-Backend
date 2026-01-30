@@ -55,16 +55,28 @@ export class AssignmentController {
     return this.service.findOne(id);
   }
 
-  // =============== FIND BY SECTION =================
-  @Get('section/:id')
-  @ApiOperation({ summary: 'Get all assignments by section ID' })
+  // // =============== FIND BY SECTION =================
+  // @Get('section/:id')
+  // @ApiOperation({ summary: 'Get all assignments by section ID' })
+  // @ApiParam({ name: 'id', example: 3 })
+  // @ApiOkResponse({
+  //   description: 'List of assignments in the section',
+  //   type: [AssignmentResponseDto],
+  // })
+  // findBySection(@Param('id', ParseIntPipe) id: number) {
+  //   return this.service.findAllBySection(id);
+  // }
+
+  // =============== FIND BY CLASSROOM =================
+  @Get('classroom/:id')
+  @ApiOperation({ summary: 'Get all assignments by classroom ID' })
   @ApiParam({ name: 'id', example: 3 })
   @ApiOkResponse({
-    description: 'List of assignments in the section',
+    description: 'List of assignments in the classroom',
     type: [AssignmentResponseDto],
   })
-  findBySection(@Param('id', ParseIntPipe) id: number) {
-    return this.service.findAllBySection(id);
+  findByClassroom(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findAllByClassroom(id);
   }
 
   // =============== UPDATE =================

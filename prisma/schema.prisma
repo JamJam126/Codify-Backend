@@ -37,6 +37,7 @@ model Classroom {
   updated_at    DateTime         @updatedAt
 
   users         ClassroomUser[]
+  assignments   Assignment[]
   sections      Section[]
   logo          ClassroomLogo?
 }
@@ -79,7 +80,8 @@ model Section {
 
 model Assignment {
   id         Int       @id @default(autoincrement())
-  section_id Int
+  classroom_id Int
+  section_id   Int
 
   title      String
   description String    @db.Text
@@ -90,6 +92,7 @@ model Assignment {
   created_at DateTime   @default(now())
   updated_at DateTime   @updatedAt
 
+  classroom  Classroom       @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
   section    Section         @relation(fields: [section_id], references: [id], onDelete: Cascade)
   challenges CodingChallenge[]
 }
