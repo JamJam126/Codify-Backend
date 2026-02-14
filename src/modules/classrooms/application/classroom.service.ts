@@ -56,8 +56,12 @@ export class ClassroomService {
     return this.repo.findAllByUser(userId);
   }
 
-  async update(id: number, dto: UpdateClassroomDto) {
+  async update(id: number, dto: UpdateClassroomDto, userId: number) {
     const classroom = await this.findOne(id);
+
+    const isAdmin = await this.memberRepo.isAdmin(id, userId);
+    if (!isAdmin)
+      throw new ForbiddenException('Only owner or admin can update');
 
     if (dto.name !== undefined) classroom.rename(dto.name);
     if (dto.description !== undefined)
@@ -66,9 +70,14 @@ export class ClassroomService {
     return this.repo.update(classroom);
   }
 
-  async delete(id: number) {
-    await this.findOne(id);
-    await this.repo.deleteById(id);
+  async delete(userId: number, classroomId: number) {
+    await this.findOne(classroomId);
+
+    const isOwner = await this.memberRepo.isOwner(classroomId, userId);
+    if (!isOwner)
+      throw new ForbiddenException('Only owner can delete this classroom');
+    
+    await this.repo.deleteById(classroomId);
   }
 
   async addMember(
