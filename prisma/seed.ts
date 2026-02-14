@@ -4,7 +4,7 @@ import { prisma } from './prisma.client';
 
 async function main() {
   // USERS
-  const [admin, instructor, student] = await Promise.all([
+  const [owner, teacher, student] = await Promise.all([
     prisma.user.create({
       data: {
         name: "Alice Owner",
@@ -14,7 +14,7 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        name: "Bob Instructor",
+        name: "Bob Teacher",
         email: "bob@school.com",
         hashed_password: "hashed_teacher_pw",
       },
@@ -75,16 +75,16 @@ async function main() {
   await prisma.classroomUser.createMany({
     data: [
       // CS101
-      { user_id: admin.id, classroom_id: classrooms[0].id, role: ClassroomRole.ADMIN },
-      { user_id: instructor.id, classroom_id: classrooms[0].id, role: ClassroomRole.INSTRUCTOR },
+      { user_id: owner.id, classroom_id: classrooms[0].id, role: ClassroomRole.OWNER },
+      { user_id: teacher.id, classroom_id: classrooms[0].id, role: ClassroomRole.TEACHER },
       { user_id: student.id, classroom_id: classrooms[0].id, role: ClassroomRole.STUDENT },
 
       // JS201
-      { user_id: instructor.id, classroom_id: classrooms[1].id, role: ClassroomRole.ADMIN },
+      { user_id: teacher.id, classroom_id: classrooms[1].id, role: ClassroomRole.OWNER },
       { user_id: student.id, classroom_id: classrooms[1].id, role: ClassroomRole.STUDENT },
 
       // ALGO301
-      { user_id: admin.id, classroom_id: classrooms[2].id, role: ClassroomRole.ADMIN },
+      { user_id: owner.id, classroom_id: classrooms[2].id, role: ClassroomRole.OWNER },
       { user_id: student.id, classroom_id: classrooms[2].id, role: ClassroomRole.STUDENT },
     ],
   });

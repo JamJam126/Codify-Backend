@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ClassroomRole" AS ENUM ('ADMIN', 'INSTRUCTOR', 'STUDENT');
+CREATE TYPE "ClassroomRole" AS ENUM ('OWNER', 'TEACHER', 'STUDENT');
 
 -- CreateEnum
 CREATE TYPE "ClassroomLogoType" AS ENUM ('IMAGE', 'GENERATED');

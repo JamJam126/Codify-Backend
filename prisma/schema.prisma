@@ -7,8 +7,8 @@ datasource db {
 }
 
 enum ClassroomRole {
-  ADMIN
-  INSTRUCTOR
+  OWNER
+  TEACHER
   STUDENT
 }
 
