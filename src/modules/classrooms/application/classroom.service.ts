@@ -79,7 +79,7 @@ export class ClassroomService {
     await this.findOne(classroomId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
-    if (!isAdmin) throw new ForbiddenException('Only admin can add members');
+    if (!isAdmin) throw new ForbiddenException('Only owner or teacher can add members');
 
     const existing = await this.memberRepo.findMember(classroomId, dto.userId);
     if (existing) throw new ConflictException('User already in classroom');
@@ -100,10 +100,10 @@ export class ClassroomService {
     await this.findOne(classroomId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
-    if (!isAdmin) throw new ForbiddenException('Only admin can remove members');
+    if (!isAdmin) throw new ForbiddenException('Only owner or teacher can remove members');
 
     if (requesterId === userId) {
-      throw new ConflictException('Admin cannot remove themselves');
+      throw new ConflictException('Only owner or teacher cannot remove themselves');
     }
 
     const member = await this.memberRepo.findMember(classroomId, userId);
@@ -122,11 +122,13 @@ export class ClassroomService {
   ): Promise<ClassroomMember> {
     await this.findOne(classroomId);
 
-    const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
-    if (!isAdmin) throw new ForbiddenException('Only admin can change roles');
+    const isOwner = await this.memberRepo.isOwner(classroomId, requesterId);
+    if (!isOwner) throw new ForbiddenException('Only owner can change roles');
 
     const member = await this.memberRepo.findMember(classroomId, userId);
     if (!member) throw new NotFoundException('Member not found');
+
+    if (role === Role.OWNER) throw new ForbiddenException('Cannot change role to Owner');
 
     if (member.role === role) {
       throw new ConflictException('User already has this role');

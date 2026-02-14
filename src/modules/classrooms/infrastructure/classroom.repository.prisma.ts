@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { ClassroomRepository } from '../domain/classroom.repository';
 import { Classroom } from '../domain/classroom.entity';
+import { Role } from '../domain/role.enum';
 
 @Injectable()
 export class ClassroomRepositoryPrisma implements ClassroomRepository {
@@ -21,7 +22,7 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
         data: {
           classroom_id: created.id,
           user_id: creatorId,
-          role: 'ADMIN',
+          role: Role.OWNER,
         },
       });
 

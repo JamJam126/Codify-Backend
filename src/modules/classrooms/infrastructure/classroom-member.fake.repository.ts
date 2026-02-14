@@ -58,6 +58,17 @@ export class FakeClassroomMemberRepository
 		}) : null;
   }
 
+  async isOwner(
+		classroomId: number, 
+		userId: number
+  ): Promise<boolean> {
+    const member = (this.members.get(classroomId) ?? [])
+      .find(m => m.userId === userId);
+
+    if (userId === 1) return true;
+    return member?.role === Role.OWNER;
+  }
+
   async isAdmin(
 		classroomId: number, 
 		userId: number
@@ -66,6 +77,6 @@ export class FakeClassroomMemberRepository
 		  .find(m => m.userId === userId);
 
     if (userId === 1) return true;
-		return member?.role === Role.ADMIN;
+		return member?.role === Role.OWNER || member?.role === Role.TEACHER;
 	}
 }
