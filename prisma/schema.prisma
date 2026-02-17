@@ -18,39 +18,40 @@ enum ClassroomLogoType {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
   name            String
-  email           String           @unique
+  email           String   @unique
   hashed_password String
-  created_at      DateTime         @default(now())
-  updated_at      DateTime         @updatedAt
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   classroomUsers  ClassroomUser[]
+  codingChallenge CodingChallenge[]
 }
 
 model Classroom {
-  id            Int              @id @default(autoincrement())
-  class_code    String           @unique
-  name          String
-  description   String?          @db.Text
-  created_at    DateTime         @default(now())
-  updated_at    DateTime         @updatedAt
+  id          Int      @id @default(autoincrement())
+  class_code  String   @unique
+  name        String
+  description String?  @db.Text
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  users         ClassroomUser[]
-  assignments   Assignment[]
-  sections      Section[]
-  logo          ClassroomLogo?
+  users       ClassroomUser[]
+  assignments Assignment[]
+  sections    Section[]
+  logo        ClassroomLogo?
 }
 
 model ClassroomUser {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   user_id      Int
   classroom_id Int
   role         ClassroomRole
-  joined_at    DateTime   @default(now())
+  joined_at    DateTime      @default(now())
 
-  user       User      @relation(fields: [user_id], references: [id])
-  classroom  Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id])
+  classroom Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, classroom_id])
 }
@@ -64,59 +65,85 @@ model ClassroomLogo {
   created_at   DateTime          @default(now())
   updated_at   DateTime          @updatedAt
 
-  classroom    Classroom         @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
 }
 
 model Section {
-  id           Int        @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   classroom_id Int
   title        String
   position     Int
 
-  classroom    Classroom   @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
-  assignments  Assignment[]
+  classroom   Classroom    @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  assignments Assignment[]
+
   @@unique([classroom_id, position])
 }
 
 model Assignment {
-  id         Int       @id @default(autoincrement())
+  id           Int @id @default(autoincrement())
   classroom_id Int
   section_id   Int
 
-  title      String
-  description String    @db.Text
-  due_at        DateTime
-  is_published  Boolean   @default(false)
-  position      Int
+  title        String
+  description  String   @db.Text
+  due_at       DateTime
+  is_published Boolean  @default(false)
+  position     Int
 
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  classroom  Classroom       @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
-  section    Section         @relation(fields: [section_id], references: [id], onDelete: Cascade)
-  challenges CodingChallenge[]
+  classroom            Classroom                   @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  section              Section                     @relation(fields: [section_id], references: [id], onDelete: Cascade)
+  assignmentChallenges AssignmentCodingChallenge[]
+}
+
+model Tag {
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  codingChallenge CodingChallenge[]
 }
 
 model CodingChallenge {
-  id            Int       @id @default(autoincrement())
-  assignment_id Int
-  title         String
-  starter_code  String    @db.Text
-  language      String
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  tag_id       Int
+  title        String
+  description  String   @db.Text
+  starter_code String   @db.Text
+  language     String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
 
-  assignment Assignment       @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
-  test_cases TestCase[]
+  user                 User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  tag                  Tag                         @relation(fields: [tag_id], references: [id])
+  test_cases           TestCase[]
+  assignmentChallenges AssignmentCodingChallenge[]
+}
+
+model AssignmentCodingChallenge {
+  id                 Int      @id @default(autoincrement())
+  assignment_id      Int
+  codingChallenge_id Int
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  assignment      Assignment      @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
+  codingChallenge CodingChallenge @relation(fields: [codingChallenge_id], references: [id], onDelete: Cascade)
 }
 
 model TestCase {
-  id             Int              @id @default(autoincrement())
-  challenge_id   Int
-  input          String           @db.Text
-  expected_output String          @db.Text
-  is_hidden      Boolean          @default(false)
-  created_at     DateTime         @default(now())
+  id              Int      @id @default(autoincrement())
+  challenge_id    Int
+  input           String   @db.Text
+  expected_output String   @db.Text
+  score           Int
+  is_hidden       Boolean  @default(false)
+  created_at      DateTime @default(now())
 
   challenge CodingChallenge @relation(fields: [challenge_id], references: [id], onDelete: Cascade)
 }

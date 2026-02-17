@@ -99,7 +99,7 @@ async function main() {
       },
     });
 
-    const assignment = await prisma.assignment.create({
+    await prisma.assignment.create({
       data: {
         classroom_id: classroom.id,
         section_id: section.id,
@@ -111,11 +111,19 @@ async function main() {
       } ,
     });
 
+    const tag=await prisma.tag.create({
+      data:{
+        name: "Term1"
+      }
+    })
+
     const challenge = await prisma.codingChallenge.create({
       data: {
-        assignment_id: assignment.id,
+        user_id: teacher.id,
         title: "Return a Value",
         language: "javascript",
+        description:"hello ",
+        tag_id:tag.id,
         starter_code: `function solve() {
   // return the number 42
 }`,
@@ -129,12 +137,14 @@ async function main() {
           input: "",
           expected_output: "42",
           is_hidden: false,
+          score: 10
         },
         {
           challenge_id: challenge.id,
           input: "",
           expected_output: "42",
           is_hidden: true,
+          score: 10
         },
       ],
     });
