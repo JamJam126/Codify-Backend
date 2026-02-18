@@ -6,13 +6,19 @@ import { CurrentUserDto } from "../auth/dto/current-user.dto";
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
 import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse } from "@nestjs/swagger";
+import { CreateTestCaseDto } from "./dto/create-test-case.dto";
+import { UpdateTestCaseDto } from "./dto/update-test-case.dto";
+import { TestCaseService } from "./test-case.service";
 
 @UseGuards(JwtAuthGuard)
 @Controller('codingchallenge')
 @ApiTags('codingchallenge')
 export class CodigChallengeController{
 
-  constructor(private readonly service:CodingChallengeService){}
+  constructor(
+    private readonly challengeService: CodingChallengeService,
+    private readonly testCaseService: TestCaseService,
+  ) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new coding challenge' })
@@ -32,19 +38,19 @@ export class CodigChallengeController{
   })
   @ApiCreatedResponse({ description: 'Challenge created successfully' })
   CreateChallenge(
-    @Body() dto:CreateCodingChallengeDto,
-    @CurrentUser() user:CurrentUserDto
+    @Body() dto: CreateCodingChallengeDto,
+    @CurrentUser() user: CurrentUserDto
   ){
-    return this.service.create(dto,user);
+    return this.challengeService.create(dto, user.id);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all challenges for current user' })
   @ApiOkResponse({ description: 'List of challenges returned successfully' })
   getCodingChallenge(
-    @CurrentUser() user:CurrentUserDto
+    @CurrentUser() user: CurrentUserDto
   ){
-    return this.service.getAllChallenge(user.id);
+    return this.challengeService.getAllChallenge(user.id);
   }
 
   @Get(":id")
@@ -54,9 +60,9 @@ export class CodigChallengeController{
   @ApiNotFoundResponse({ description: 'Challenge not found' })
   GetChallengeById(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user:CurrentUserDto
+    @CurrentUser() user: CurrentUserDto
   ){
-    return this.service.getChallengeById(id,user.id);
+    return this.challengeService.getChallengeById(id, user.id);
   }
 
   @Patch(":id")
@@ -81,10 +87,10 @@ export class CodigChallengeController{
   @ApiNotFoundResponse({ description: 'Challenge not found' })
   updateChallenge(
     @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user:CurrentUserDto,
-    @Body() dto:UpdateCodingChallengeDto,
+    @CurrentUser() user: CurrentUserDto,
+    @Body() dto: UpdateCodingChallengeDto,
   ){
-    return this.service.updateChallenge(id, dto, user.id);
+    return this.challengeService.updateChallenge(id, dto, user.id);
   }
 
   @Delete(":id")
@@ -97,7 +103,48 @@ export class CodigChallengeController{
     @Param("id", ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserDto
   ){
-    return this.service.deleteChallenge(id, user.id);
+    return this.challengeService.deleteChallenge(id, user.id);
   }
 
+  @Post(":challengeId/testcase")
+  createTestCase(
+    @Param('challengeId', ParseIntPipe) challengeId: number,
+    @CurrentUser() user: CurrentUserDto,
+    @Body() dto: CreateTestCaseDto
+  ) {
+    return this.testCaseService.createTestCase(challengeId, user.id, dto);
+  }
+
+  @Get(":challengeId/testcase")
+  getAllTestCases(
+    @Param('challengeId', ParseIntPipe) challengeId: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.testCaseService.getAllTestCasesForChallenge(challengeId, user.id);
+  }
+
+  @Get("testcase/:id")
+  getTestCaseById(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.testCaseService.getTestCaseById(id, user.id);
+  }
+
+  @Patch("testcase/:id")
+  updateTestCase(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CurrentUserDto,
+    @Body() dto: UpdateTestCaseDto
+  ) {
+    return this.testCaseService.updateTestCase(id, dto, user.id);
+  }
+
+  @Delete("testcase/:id")
+  deleteTestCase(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.testCaseService.deleteTestCase(id, user.id);
+  }
 }
