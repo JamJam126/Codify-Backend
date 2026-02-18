@@ -5,8 +5,9 @@ import { CurrentUser } from "src/common/decorators/current-user.decorator";
 import { CurrentUserDto } from "../auth/dto/current-user.dto";
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
-import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiBearerAuth } from "@nestjs/swagger";
 
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @Controller('codingchallenge')
 @ApiTags('codingchallenge')

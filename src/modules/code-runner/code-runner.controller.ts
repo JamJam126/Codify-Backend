@@ -1,7 +1,12 @@
-import { Controller , Post , Body, HttpException , HttpStatus, Param , Get} from "@nestjs/common";
+import { Controller , Post , Body, HttpException , HttpStatus, Param , Get, UseGuards} from "@nestjs/common";
 import { CodeRunnerService } from "./code-runner.service";
 import { CodeRunnerDto } from "./dto/run-code.dto";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 
+@ApiBearerAuth('access-token')
+@UseGuards(JwtAuthGuard)
+@ApiTags('code runner')
 @Controller("code-runner")
 export class CodeRunnerController{
 

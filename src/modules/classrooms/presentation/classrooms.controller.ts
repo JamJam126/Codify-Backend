@@ -20,6 +20,7 @@ import {
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiForbiddenResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import { ClassroomService } from '../application/classroom.service';
@@ -33,6 +34,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CurrentUserDto } from 'src/modules/auth/dto/current-user.dto';
 
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @ApiTags('classrooms')
 @Controller('classrooms')
