@@ -106,7 +106,12 @@ export class CodigChallengeController{
     return this.challengeService.deleteChallenge(id, user.id);
   }
 
+
   @Post(":challengeId/testcase")
+  @ApiOperation({ summary: 'Create a new test case for a challenge' })
+  @ApiParam({ name: 'challengeId', example: 1 })
+  @ApiBody({ type: CreateTestCaseDto })
+  @ApiCreatedResponse({ description: 'Test case created successfully' })
   createTestCase(
     @Param('challengeId', ParseIntPipe) challengeId: number,
     @CurrentUser() user: CurrentUserDto,
@@ -116,6 +121,9 @@ export class CodigChallengeController{
   }
 
   @Get(":challengeId/testcase")
+  @ApiOperation({ summary: 'Get all test cases for a challenge' })
+  @ApiParam({ name: 'challengeId', example: 1 })
+  @ApiOkResponse({ description: 'List of test cases returned successfully' })
   getAllTestCases(
     @Param('challengeId', ParseIntPipe) challengeId: number,
     @CurrentUser() user: CurrentUserDto
@@ -124,6 +132,10 @@ export class CodigChallengeController{
   }
 
   @Get("testcase/:id")
+  @ApiOperation({ summary: 'Get a test case by id' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiOkResponse({ description: 'Test case returned successfully' })
+  @ApiNotFoundResponse({ description: 'Test case not found' })
   getTestCaseById(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserDto
@@ -132,6 +144,12 @@ export class CodigChallengeController{
   }
 
   @Patch("testcase/:id")
+  @ApiOperation({ summary: 'Update a test case' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({ type: UpdateTestCaseDto })
+  @ApiOkResponse({ description: 'Test case updated successfully' })
+  @ApiForbiddenResponse({ description: 'Forbidden to update' })
+  @ApiNotFoundResponse({ description: 'Test case not found' })
   updateTestCase(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserDto,
@@ -141,6 +159,11 @@ export class CodigChallengeController{
   }
 
   @Delete("testcase/:id")
+  @ApiOperation({ summary: 'Delete a test case' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiOkResponse({ description: 'Test case deleted successfully' })
+  @ApiForbiddenResponse({ description: 'Forbidden to delete' })
+  @ApiNotFoundResponse({ description: 'Test case not found' })
   deleteTestCase(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserDto
