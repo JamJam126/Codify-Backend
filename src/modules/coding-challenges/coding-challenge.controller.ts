@@ -1,10 +1,10 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
-import { CodingChallengeService } from "./codingChellenge.service";
-import { CreateCodingChallengeDto } from "./dto/create_codingChallenge.dto";
+import { CodingChallengeService } from "./coding-chellenge.service";
+import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
 import { CurrentUser } from "src/common/decorators/current-user.decorator";
 import { CurrentUserDto } from "../auth/dto/current-user.dto";
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
-import { UpdateCodingChallengeDto } from "./dto/update_codingChallenge.dto";
+import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
 import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse } from "@nestjs/swagger";
 
 @UseGuards(JwtAuthGuard)

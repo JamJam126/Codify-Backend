@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
-import { CodigChallengeController } from "./codingChallenge.controller";
+import { CodigChallengeController } from "./coding-challenge.controller";
 import { PrismaService } from "prisma/prisma.service";
-import { CodingChallengeService } from "./codingChellenge.service";
-import { CodingChallengeRepository } from "./repositories/codingChallenge.repository";
+import { CodingChallengeService } from "./coding-chellenge.service";
+import { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
 
 @Module({
   controllers:[CodigChallengeController],

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "prisma/prisma.service";
-import { CodingChallenge } from "../codingChallenge.entity";
-import { UpdateCodingChallengeDto } from "../dto/update_codingChallenge.dto";
+import { CodingChallenge } from "../coding-challenge.entity";
+import { UpdateCodingChallengeDto } from "../dto/update-coding-challenge.dto";
 
 @Injectable()
 export class CodingChallengeRepository{
