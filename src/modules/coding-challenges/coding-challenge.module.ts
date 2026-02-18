@@ -3,6 +3,7 @@ import { CodigChallengeController } from "./coding-challenge.controller";
 import { PrismaService } from "prisma/prisma.service";
 import { CodingChallengeService } from "./coding-chellenge.service";
 import { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
+import { CodingChallengePrismaRepository } from "./repositories/coding-challenge.prisma.repository";
 
 @Module({
   controllers:[CodigChallengeController],
@@ -10,8 +11,8 @@ import { CodingChallengeRepository } from "./repositories/coding-challenge.repos
     PrismaService,
     CodingChallengeService,
     {
-      provide:"CodingChallenge_Repository",
-      useClass:CodingChallengeRepository
+      provide: "CodingChallengeRepository",
+      useClass: CodingChallengePrismaRepository
     }
   ]
 })

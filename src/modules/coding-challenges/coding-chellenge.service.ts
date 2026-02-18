@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException} from "@nestjs/common";
 import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
-import { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
+import type { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
 import { CodingChallenge } from "./coding-challenge.entity";
 import { CurrentUserDto } from "../auth/dto/current-user.dto";
 import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
@@ -9,8 +9,8 @@ import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
 export class CodingChallengeService{
 
   constructor(
-    @Inject("CodingChallenge_Repository")
-    private readonly repo:CodingChallengeRepository
+    @Inject("CodingChallengeRepository")
+    private readonly repo: CodingChallengeRepository
   ){}
 
   create(
