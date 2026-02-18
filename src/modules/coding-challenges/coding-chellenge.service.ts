@@ -15,12 +15,12 @@ export class CodingChallengeService{
 
   create(
     dto:CreateCodingChallengeDto,
-    user:CurrentUserDto
+    userId: number
   ){
     let challenge:CodingChallenge;
     try {
       challenge=CodingChallenge.create({
-        userId: user.id,
+        userId: userId,
         tagId:1,
         title:dto.title,
         description:dto.description,
