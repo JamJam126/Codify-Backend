@@ -6,13 +6,37 @@ services:
     ports:
       - "4000:4000"
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     environment:
+      PORT: 4000
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      CODE_VOLUME_NAME: eduai-github-assistant-backend_code-temp
+    volumes:
+      - code-temp:/code-temp
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
 
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
+    container_name: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
 
+  sandbox:
+    build: ./code-runner
+    image: code-runner-c
+    volumes:
+      - code-temp:/code-temp
+    command: ["sleep", "infinity"]
+
+volumes:
+  code-temp:

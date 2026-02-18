@@ -3,8 +3,8 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaService } from 'prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
-// import { QueueModule } from './modules/queue/queue.module';
-// import { CodeRunnerModule } from './modules/code-runner/code-runner.module';
+import { QueueModule } from './modules/queue/queue.module';
+import { CodeRunnerModule } from './modules/code-runner/code-runner.module';
 import { ClassroomsModule } from './modules/classrooms/classrooms.module';
 import { AssignmentModule } from './modules/assignments/assignment.module';
 import { CodingChallengModule } from './modules/coding-challenges/coding-challenge.module';
@@ -16,7 +16,7 @@ import { CodingChallengModule } from './modules/coding-challenges/coding-challen
     ClassroomsModule,
     AssignmentModule,
     CodingChallengModule,
-    // QueueModule, CodeRunnerModule
+    QueueModule, CodeRunnerModule
   ],
   providers: [PrismaService],
 })

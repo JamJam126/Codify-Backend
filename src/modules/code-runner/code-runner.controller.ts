@@ -8,7 +8,7 @@ import { JobFailureDto } from "./dto/job-failure.dto";
 import { JobQueueDto } from "./dto/job-queue.dto";
 
 @ApiBearerAuth('access-token')
-@UseGuards(JwtAuthGuard)
+//@UseGuards(JwtAuthGuard)
 @ApiTags('code runner')
 @Controller("code-runner")
 export class CodeRunnerController{
