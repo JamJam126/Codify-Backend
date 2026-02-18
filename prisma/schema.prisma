@@ -144,6 +144,7 @@ model TestCase {
   score           Int
   is_hidden       Boolean  @default(false)
   created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   challenge CodingChallenge @relation(fields: [challenge_id], references: [id], onDelete: Cascade)
 }
