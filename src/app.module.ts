@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 // import { CodeRunnerModule } from './modules/code-runner/code-runner.module';
 import { ClassroomsModule } from './modules/classrooms/classrooms.module';
 import { AssignmentModule } from './modules/assignments/assignment.module';
+import { CodingChallengModule } from './modules/codingChallenge/codingChallenge.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -14,6 +15,7 @@ import { AssignmentModule } from './modules/assignments/assignment.module';
     AuthModule,
     ClassroomsModule,
     AssignmentModule,
+    CodingChallengModule,
     // QueueModule, CodeRunnerModule
   ],
   providers: [PrismaService],
