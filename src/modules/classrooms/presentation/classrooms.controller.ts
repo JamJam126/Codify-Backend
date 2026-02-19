@@ -30,9 +30,9 @@ import { AddMemberDto } from './dto/add-member.dto';
 import { ClassroomResponseDto } from './dto/classroom-response.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMemberResponseDto } from './dto/classroom-member-response.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { CurrentUserDto } from 'src/modules/auth/dto/current-user.dto';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { CurrentUserDto } from '../../../modules/auth/dto/current-user.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -84,8 +84,11 @@ export class ClassroomsController {
   @ApiNotFoundResponse({
     description: 'Invalid classroom code',
   })
-  findByClassCode(@Param('classCode') classCode: string) {
-    return this.service.findByClassCode(classCode);
+  findByClassCode(
+    @Param('classCode') classCode: string,
+     @CurrentUser() user: CurrentUserDto, 
+  ) {
+    return this.service.findByClassCode(classCode, user.id);
   }
 
   // =============== FIND ONE =================
@@ -99,8 +102,11 @@ export class ClassroomsController {
   @ApiNotFoundResponse({
     description: 'Classroom not found',
   })
-  findOne(@Param('classroomId', ParseIntPipe) classroomId: number) {
-    return this.service.findOne(classroomId);
+  findOne(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.findOne(classroomId, user.id);
   }
 
   // =============== UPDATE =================
@@ -136,7 +142,7 @@ export class ClassroomsController {
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @CurrentUser() user: CurrentUserDto,
   ) {
-    await this.service.delete(user.id, classroomId);
+    await this.service.delete(classroomId, user.id);
   }
 
   // =============== MEMBERS =================
@@ -203,11 +209,12 @@ export class ClassroomsController {
   @ApiOkResponse({ description: 'List of classroom members', type: [ClassroomMemberResponseDto] })
   async listMembers(
     @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
   ) {
-    return this.service.listMembers(classroomId);
+    return this.service.listMembers(classroomId, user.id);
   }
 
-  @Get(':classroomId/members/:userId')
+  @Get(':classroomId/members/:memberId')
   @ApiOperation({ summary: 'Get a specific classroom member' })
   @ApiParam({ name: 'classroomId', example: 1 })
   @ApiParam({ name: 'userId', example: 2 })
@@ -215,8 +222,9 @@ export class ClassroomsController {
   @ApiNotFoundResponse({ description: 'Member not found' })
   async getMember(
     @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Param('userId', ParseIntPipe) userId: number,
+    @CurrentUser() user: CurrentUserDto,
+    @Param('memberId', ParseIntPipe) memberId: number,
   ) {
-    return this.service.getMember(classroomId, userId);
+    return this.service.getMember(classroomId, memberId, user.id);
   }
 }

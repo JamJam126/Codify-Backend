@@ -38,14 +38,16 @@ export class ClassroomService {
     }
   }
 
-  async findOne(id: number): Promise<Classroom> {
+  async findOne(id: number, userId: number): Promise<Classroom> {
     const classroom = await this.repo.findById(id);
     if (!classroom) throw new NotFoundException('Classroom not found');
+
+    await this.assertIsMember(id, userId);
 
     return classroom;
   }
 
-  async findByClassCode(code: string): Promise<Classroom> {
+  async findByClassCode(code: string, userId: number): Promise<Classroom> {
     const classroom = await this.repo.findByClassCode(code);
     if (!classroom) throw new NotFoundException('Classroom not found');
     
@@ -57,7 +59,7 @@ export class ClassroomService {
   }
 
   async update(id: number, dto: UpdateClassroomDto, userId: number) {
-    const classroom = await this.findOne(id);
+    const classroom = await this.findOne(id, userId);
 
     const isAdmin = await this.memberRepo.isAdmin(id, userId);
     if (!isAdmin)
@@ -70,8 +72,8 @@ export class ClassroomService {
     return this.repo.update(classroom);
   }
 
-  async delete(userId: number, classroomId: number) {
-    await this.findOne(classroomId);
+  async delete(classroomId: number, userId: number) {
+    await this.findOne(classroomId, userId);
 
     const isOwner = await this.memberRepo.isOwner(classroomId, userId);
     if (!isOwner)
@@ -85,7 +87,7 @@ export class ClassroomService {
     requesterId: number,
     dto: AddMemberDto
   ): Promise<ClassroomMember> {
-    await this.findOne(classroomId);
+    await this.findOne(classroomId, requesterId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) throw new ForbiddenException('Only owner or teacher can add members');
@@ -106,7 +108,7 @@ export class ClassroomService {
     requesterId: number,
     userId: number
   ) {
-    await this.findOne(classroomId);
+    await this.findOne(classroomId, requesterId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) throw new ForbiddenException('Only owner or teacher can remove members');
@@ -129,7 +131,7 @@ export class ClassroomService {
     userId: number,
     role: Role
   ): Promise<ClassroomMember> {
-    await this.findOne(classroomId);
+    await this.findOne(classroomId, requesterId);
 
     const isOwner = await this.memberRepo.isOwner(classroomId, requesterId);
     if (!isOwner) throw new ForbiddenException('Only owner can change roles');
@@ -147,15 +149,15 @@ export class ClassroomService {
     return updated;
   }
 
-  async listMembers(classroomId: number): Promise<ClassroomMember[]> {
-    await this.findOne(classroomId);
+  async listMembers(classroomId: number, userId: number): Promise<ClassroomMember[]> {
+    await this.findOne(classroomId, userId);
     return this.memberRepo.findMembers(classroomId);
   }
 
-  async getMember(classroomId: number, userId: number) {
-    await this.findOne(classroomId);
+  async getMember(classroomId: number, memberId: number, userId: number) {
+    await this.findOne(classroomId, userId);
 
-    const member = await this.memberRepo.findMember(classroomId, userId);
+    const member = await this.memberRepo.findMember(classroomId, memberId);
     if (!member) throw new NotFoundException('Member not found');
 
     return member;
@@ -172,5 +174,12 @@ export class ClassroomService {
     return Array.from({ length: len })
       .map(() => chars[Math.floor(Math.random() * chars.length)])
       .join('');
+  }
+
+  private async assertIsMember(classroomId: number, userId: number) {
+    const member = await this.memberRepo.findMember(classroomId, userId);
+    if (!member) {
+      throw new ForbiddenException('Not a member of this classroom');
+    }
   }
 }
