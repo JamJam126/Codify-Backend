@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException} from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException} from "@nestjs/common";
 import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
 import type { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
 import { CodingChallenge } from "./coding-challenge.entity";
@@ -13,27 +13,33 @@ export class CodingChallengeService{
     private readonly repo: CodingChallengeRepository
   ){}
 
-  create(
-    dto:CreateCodingChallengeDto,
+  async create(
+    dto: CreateCodingChallengeDto,
     userId: number
-  ){
-    let challenge:CodingChallenge;
+  ) {
+    const exist = await this.repo.findByTitle(dto.title);
+    if (exist) throw new ConflictException('Challenge title already exists');
+
+    let challenge: CodingChallenge;
     try {
-      challenge=CodingChallenge.create({
+      challenge = CodingChallenge.create({
         userId: userId,
-        tagId:1,
-        title:dto.title,
-        description:dto.description,
-        starterCode:dto.starterCode,
-        language:dto.language
+        tagId: 1,
+        title: dto.title,
+        description: dto.description!,
+        starterCode: dto.starterCode!,
+        language: dto.language
       })
     } catch (error) {
       throw new BadRequestException(error.message);
     }
+
     return this.repo.create(challenge);
   }
 
-  async getChallengeById(id:number,userId:number){
+  async getChallengeById(id: number, userId: number) {
+    if (id <= 0) throw new BadRequestException('ID must be positive');
+
     const challenge = await this.repo.findById(id);
 
     if (challenge.userId !== userId)
@@ -47,13 +53,14 @@ export class CodingChallengeService{
   }
 
   async updateChallenge(id: number, dto: UpdateCodingChallengeDto, userId: number) {
+    if (Object.keys(dto).length === 0) throw new BadRequestException('Update body cannot be empty');
+    
     const challenge = await this.repo.findById(id);
 
     if (!challenge) throw new NotFoundException("Challenge not found");
 
     if (challenge.userId !== userId) throw new ForbiddenException("You cannot update this challenge");
-
-    return this.repo.update(id, dto);
+    return await this.repo.update(id, dto);
   }
 
   async deleteChallenge(id: number, userId: number) {
@@ -63,10 +70,8 @@ export class CodingChallengeService{
 
     if (challenge.userId !== userId) throw new ForbiddenException("You cannot delete this challenge");
 
-    await this.repo.delete(id);
+    // await this.repo.delete(id);
 
-    return {
-      message: "Challenge deleted successfully",
-    }
+    return await this.repo.delete(id);
   }
 }

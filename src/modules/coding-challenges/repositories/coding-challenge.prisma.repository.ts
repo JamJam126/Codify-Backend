@@ -54,6 +54,24 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
     });
   }
 
+  async findByTitle(title: string): Promise<CodingChallenge | undefined> {
+    const result = await this.prisma.codingChallenge.findFirst({
+      where: { title: title },
+    });
+
+    return result ? CodingChallenge.rehydrate({
+      id: result.id,
+      userId: result.user_id,
+      tagId: result.tag_id,
+      title: result.title,
+      description: result.description,
+      starterCode: result.starter_code,
+      language: result.language,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at
+    }) : undefined;
+  }
+
   async getAllChallenge(userId: number): Promise<CodingChallenge[]> {
     const results = await this.prisma.codingChallenge.findMany({
       where: { user_id: userId }
