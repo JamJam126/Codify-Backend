@@ -65,7 +65,6 @@ export class FakeClassroomMemberRepository
     const member = (this.members.get(classroomId) ?? [])
       .find(m => m.userId === userId);
 
-    if (userId === 1) return true;
     return member?.role === Role.OWNER;
   }
 
@@ -76,7 +75,6 @@ export class FakeClassroomMemberRepository
 		const member = (this.members.get(classroomId) ?? [])
 		  .find(m => m.userId === userId);
 
-    if (userId === 1) return true;
 		return member?.role === Role.OWNER || member?.role === Role.TEACHER;
 	}
 }

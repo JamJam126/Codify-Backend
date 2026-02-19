@@ -1,7 +1,14 @@
+import { ClassroomMember } from '../domain/classroom-member.entity';
 import { Classroom } from '../domain/classroom.entity';
 import { ClassroomRepository } from '../domain/classroom.repository';
+import { Role } from '../domain/role.enum';
+import { FakeClassroomMemberRepository } from './classroom-member.fake.repository';
 
 export class FakeClassroomRepository implements ClassroomRepository {
+  constructor(
+    private readonly memberRepo?: FakeClassroomMemberRepository
+  ) {}
+
   private items: Classroom[] = [];
   private idSeq = 1;
 
@@ -16,6 +23,14 @@ export class FakeClassroomRepository implements ClassroomRepository {
     });
 
     this.items.push(created);
+
+    if (this.memberRepo) {
+      await this.memberRepo.addMember(
+        created.id!,
+        new ClassroomMember(creatorId, Role.OWNER),
+      );
+    }
+    
     return created;
   }
 
@@ -44,7 +59,15 @@ export class FakeClassroomRepository implements ClassroomRepository {
 	}
 
   async findAllByUser(userId: number): Promise<Classroom[]> {
-    return [...this.items]; // FAKE VERSION DOESN'T CARE ABOUT MEMBERSHIP
+    if (!this.memberRepo) return [];
+    const results = await Promise.all(
+      this.items.map(async c => {
+        const member = await this.memberRepo!.findMember(c.id!, userId);
+        return member ? c : null;
+      })
+    );
+
+    return results.filter(c => c !== null) as Classroom[];
   }
 
   async update(classroom: Classroom): Promise<Classroom> {
