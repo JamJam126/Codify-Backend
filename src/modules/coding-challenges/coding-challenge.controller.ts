@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
 import { CodingChallengeService } from "./coding-chellenge.service";
 import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
-import { CurrentUser } from "src/common/decorators/current-user.decorator";
+import { CurrentUser } from "../../../src/common/decorators/current-user.decorator";
 import { CurrentUserDto } from "../auth/dto/current-user.dto";
-import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "../../../src/common/guards/jwt-auth.guard";
 import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
 import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { CreateTestCaseDto } from "./dto/create-test-case.dto";
@@ -12,9 +12,9 @@ import { TestCaseService } from "./test-case.service";
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
-@Controller('codingchallenge')
-@ApiTags('codingchallenge')
-export class CodigChallengeController{
+@Controller('challenges')
+@ApiTags('challenges')
+export class CodingChallengeController{
 
   constructor(
     private readonly challengeService: CodingChallengeService,
@@ -95,6 +95,7 @@ export class CodigChallengeController{
   }
 
   @Delete(":id")
+  @HttpCode(204)    
   @ApiOperation({ summary: 'Delete a challenge' })
   @ApiParam({ name: 'id', example: 1 })
   @ApiOkResponse({ description: 'Challenge deleted successfully' })
@@ -106,7 +107,6 @@ export class CodigChallengeController{
   ){
     return this.challengeService.deleteChallenge(id, user.id);
   }
-
 
   @Post(":challengeId/testcase")
   @ApiOperation({ summary: 'Create a new test case for a challenge' })
@@ -160,6 +160,7 @@ export class CodigChallengeController{
   }
 
   @Delete("testcase/:id")
+  @HttpCode(204)
   @ApiOperation({ summary: 'Delete a test case' })
   @ApiParam({ name: 'id', example: 1 })
   @ApiOkResponse({ description: 'Test case deleted successfully' })
