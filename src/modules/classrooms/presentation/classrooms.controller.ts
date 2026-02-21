@@ -33,13 +33,18 @@ import { ClassroomMemberResponseDto } from './dto/classroom-member-response.dto'
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../../../modules/auth/dto/current-user.dto';
+import { ClassroomMembershipService } from '../application/classroom-membership.service';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @ApiTags('classrooms')
 @Controller('classrooms')
 export class ClassroomsController {
-  constructor(private readonly service: ClassroomService) {}
+  constructor(
+    private readonly service: ClassroomService,
+
+    private readonly membershipService: ClassroomMembershipService
+  ) { }
 
   // =============== CREATE =================
   @Post()
@@ -157,7 +162,7 @@ export class ClassroomsController {
     @Body() dto: AddMemberDto,
     @CurrentUser() user: CurrentUserDto
   ) {
-    await this.service.addMember(
+    await this.membershipService.addMember(
       classroomId, 
       user.id, 
       dto
@@ -176,7 +181,7 @@ export class ClassroomsController {
     @Param('userId', ParseIntPipe) userId: number,
     @CurrentUser() user: CurrentUserDto
   ) {
-    await this.service.removeMember(classroomId, user.id, userId);
+    await this.membershipService.removeMember(classroomId, user.id, userId);
   }
 
   @Patch(':classroomId/members/:userId/role')
@@ -196,7 +201,7 @@ export class ClassroomsController {
     @Body() dto: { role: Role },
     @CurrentUser() user: CurrentUserDto
   ) {
-    await this.service.changeMemberRole(
+    await this.membershipService.changeMemberRole(
       classroomId,
       user.id,
       userId,
@@ -211,7 +216,7 @@ export class ClassroomsController {
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @CurrentUser() user: CurrentUserDto,
   ) {
-    return this.service.listMembers(classroomId, user.id);
+    return this.membershipService.listMembers(classroomId, user.id);
   }
 
   @Get(':classroomId/members/:memberId')
@@ -225,6 +230,6 @@ export class ClassroomsController {
     @CurrentUser() user: CurrentUserDto,
     @Param('memberId', ParseIntPipe) memberId: number,
   ) {
-    return this.service.getMember(classroomId, memberId, user.id);
+    return this.membershipService.getMember(classroomId, memberId, user.id);
   }
 }

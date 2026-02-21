@@ -56,7 +56,6 @@ export class TestCaseService {
 
     await this.challengeService.getChallengeById(testCase.challengeId, userId);
 
-    console.log(dto.score);
     const updatedTestCase = await this.repo.update(id, {
       input: dto.input,
       expectedOutput: dto.expected_output,
