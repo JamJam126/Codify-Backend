@@ -129,10 +129,7 @@ npx prisma db seed
 
 Redis is required for BullMQ job queue management.
 ```bash
-docker run -d \
-  --name redis \
-  -p 6379:6379 \
-  redis:latest
+docker run -d --name redis -p 6379:6379 redis:latest
 ```
 
 Verify Redis is running:
@@ -161,7 +158,7 @@ CMD ["sleep", "infinity"]
 
 Build the Docker image:
 ```bash
-docker build -f Dockerfile.c -t code-runner-c .
+docker build -f Dockerfile -t code-runner-c .
 ```
 
 Verify the image was created:

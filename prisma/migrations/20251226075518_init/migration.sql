@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "ClassroomRole" AS ENUM ('ADMIN', 'INSTRUCTOR', 'STUDENT');
+CREATE TYPE "ClassroomRole" AS ENUM ('OWNER', 'TEACHER', 'STUDENT');
 
 -- CreateEnum
 CREATE TYPE "ClassroomLogoType" AS ENUM ('IMAGE', 'GENERATED');
@@ -66,8 +66,10 @@ CREATE TABLE "Section" (
 CREATE TABLE "Assignment" (
     "id" SERIAL NOT NULL,
     "section_id" INTEGER NOT NULL,
+    "classroom_id" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
+    "position" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -112,7 +114,9 @@ CREATE UNIQUE INDEX "ClassroomUser_user_id_classroom_id_key" ON "ClassroomUser"(
 CREATE UNIQUE INDEX "ClassroomLogo_classroom_id_key" ON "ClassroomLogo"("classroom_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Section_classroom_id_position_key" ON "Section"("classroom_id", "position");
+-- CREATE UNIQUE INDEX "Section_classroom_id_position_key" ON "Section"("classroom_id", "position");
+
+CREATE UNIQUE INDEX "Assignment_classroom_id_position_key" ON "Assignment"("classroom_id", "position");
 
 -- AddForeignKey
 ALTER TABLE "ClassroomUser" ADD CONSTRAINT "ClassroomUser_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -128,6 +132,9 @@ ALTER TABLE "Section" ADD CONSTRAINT "Section_classroom_id_fkey" FOREIGN KEY ("c
 
 -- AddForeignKey
 ALTER TABLE "Assignment" ADD CONSTRAINT "Assignment_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Assignment" ADD CONSTRAINT "Assignment_classroom_id_fkey" FOREIGN KEY ("classroom_id") REFERENCES "Classroom"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "CodingChallenge" ADD CONSTRAINT "CodingChallenge_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "Assignment"("id") ON DELETE CASCADE ON UPDATE CASCADE;

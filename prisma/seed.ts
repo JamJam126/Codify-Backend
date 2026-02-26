@@ -4,19 +4,19 @@ import { prisma } from './prisma.client';
 
 async function main() {
   // USERS
-  const [admin, instructor, student] = await Promise.all([
+  const [owner, teacher, student] = await Promise.all([
     prisma.user.create({
       data: {
-        name: "Alice Admin",
+        name: "Alice Owner",
         email: "alice@school.com",
-        hashed_password: "hashed_admin_pw",
+        hashed_password: "hashed_owner_pw",
       },
     }),
     prisma.user.create({
       data: {
-        name: "Bob Instructor",
+        name: "Bob Teacher",
         email: "bob@school.com",
-        hashed_password: "hashed_instructor_pw",
+        hashed_password: "hashed_teacher_pw",
       },
     }),
     prisma.user.create({
@@ -75,16 +75,16 @@ async function main() {
   await prisma.classroomUser.createMany({
     data: [
       // CS101
-      { user_id: admin.id, classroom_id: classrooms[0].id, role: ClassroomRole.ADMIN },
-      { user_id: instructor.id, classroom_id: classrooms[0].id, role: ClassroomRole.INSTRUCTOR },
+      { user_id: owner.id, classroom_id: classrooms[0].id, role: ClassroomRole.OWNER },
+      { user_id: teacher.id, classroom_id: classrooms[0].id, role: ClassroomRole.TEACHER },
       { user_id: student.id, classroom_id: classrooms[0].id, role: ClassroomRole.STUDENT },
 
       // JS201
-      { user_id: instructor.id, classroom_id: classrooms[1].id, role: ClassroomRole.ADMIN },
+      { user_id: teacher.id, classroom_id: classrooms[1].id, role: ClassroomRole.OWNER },
       { user_id: student.id, classroom_id: classrooms[1].id, role: ClassroomRole.STUDENT },
 
       // ALGO301
-      { user_id: admin.id, classroom_id: classrooms[2].id, role: ClassroomRole.ADMIN },
+      { user_id: owner.id, classroom_id: classrooms[2].id, role: ClassroomRole.OWNER },
       { user_id: student.id, classroom_id: classrooms[2].id, role: ClassroomRole.STUDENT },
     ],
   });
@@ -99,22 +99,31 @@ async function main() {
       },
     });
 
-    const assignment = await prisma.assignment.create({
+    await prisma.assignment.create({
       data: {
+        classroom_id: classroom.id,
         section_id: section.id,
         title: "Basic Challenge",
         description: "Introductory coding assignment.",
-        due_at: new Date('2026-01-20T23:59:59Z'), 
+        due_at: new Date('2030-01-20T23:59:59Z'), 
         is_published: false,
         position: 1,         
       } ,
     });
 
+    const tag=await prisma.tag.create({
+      data:{
+        name: "Term1"
+      }
+    })
+
     const challenge = await prisma.codingChallenge.create({
       data: {
-        assignment_id: assignment.id,
+        user_id: teacher.id,
         title: "Return a Value",
         language: "javascript",
+        description:"hello ",
+        tag_id:tag.id,
         starter_code: `function solve() {
   // return the number 42
 }`,
@@ -128,12 +137,14 @@ async function main() {
           input: "",
           expected_output: "42",
           is_hidden: false,
+          score: 10
         },
         {
           challenge_id: challenge.id,
           input: "",
           expected_output: "42",
           is_hidden: true,
+          score: 10
         },
       ],
     });

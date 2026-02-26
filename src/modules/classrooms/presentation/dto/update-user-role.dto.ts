@@ -4,7 +4,7 @@ import { Role } from '../../domain/role.enum';
 
 @ApiSchema({ name: 'UpdateUserRole' })
 export class UpdateUserRoleDto {
-  @ApiProperty({ enum: Role, example: Role.ADMIN, description: 'New role for the user' })
+  @ApiProperty({ enum: Role, example: Role.OWNER, description: 'New role for the user' })
   @IsEnum(Role)
   role: Role;
 }

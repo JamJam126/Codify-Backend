@@ -7,5 +7,4 @@
 */
 -- AlterTable
 ALTER TABLE "Assignment" ADD COLUMN     "due_at" TIMESTAMP(3) NOT NULL,
-ADD COLUMN     "is_published" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "position" INTEGER NOT NULL;
+ADD COLUMN     "is_published" BOOLEAN NOT NULL DEFAULT false;

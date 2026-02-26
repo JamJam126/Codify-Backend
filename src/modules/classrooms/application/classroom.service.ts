@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto';
 import { AddMemberDto } from '../presentation/dto/add-member.dto';
 import { ClassroomMember } from '../domain/classroom-member.entity';
 import { Role } from '../domain/role.enum';
+import { ClassroomMembershipService } from './classroom-membership.service';
 
 @Injectable()
 export class ClassroomService {
@@ -15,8 +16,7 @@ export class ClassroomService {
     @Inject('ClassroomRepository')
     private readonly repo: ClassroomRepository,
 
-    @Inject('ClassroomMemberRepository')
-    private readonly memberRepo: ClassroomMemberRepository
+    private readonly membershipService: ClassroomMembershipService
   ) {}
 
   async create(dto: CreateClassroomDto, userId: number): Promise<Classroom> {
@@ -38,14 +38,16 @@ export class ClassroomService {
     }
   }
 
-  async findOne(id: number): Promise<Classroom> {
+  async findOne(id: number, userId: number): Promise<Classroom> {
     const classroom = await this.repo.findById(id);
     if (!classroom) throw new NotFoundException('Classroom not found');
+
+    await this.membershipService.assertIsMember(id, userId);
 
     return classroom;
   }
 
-  async findByClassCode(code: string): Promise<Classroom> {
+  async findByClassCode(code: string, userId: number): Promise<Classroom> {
     const classroom = await this.repo.findByClassCode(code);
     if (!classroom) throw new NotFoundException('Classroom not found');
     
@@ -56,8 +58,9 @@ export class ClassroomService {
     return this.repo.findAllByUser(userId);
   }
 
-  async update(id: number, dto: UpdateClassroomDto) {
-    const classroom = await this.findOne(id);
+  async update(id: number, dto: UpdateClassroomDto, userId: number) {
+    await this.membershipService.ensureRole(id, userId, [Role.OWNER, Role.TEACHER])
+    const classroom = await this.findOne(id, userId);
 
     if (dto.name !== undefined) classroom.rename(dto.name);
     if (dto.description !== undefined)
@@ -66,88 +69,11 @@ export class ClassroomService {
     return this.repo.update(classroom);
   }
 
-  async delete(id: number) {
-    await this.findOne(id);
-    await this.repo.deleteById(id);
-  }
-
-  async addMember(
-    classroomId: number,
-    requesterId: number,
-    dto: AddMemberDto
-  ): Promise<ClassroomMember> {
-    await this.findOne(classroomId);
-
-    const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
-    if (!isAdmin) throw new ForbiddenException('Only admin can add members');
-
-    const existing = await this.memberRepo.findMember(classroomId, dto.userId);
-    if (existing) throw new ConflictException('User already in classroom');
-
-    const addedMember = await this.memberRepo.addMember(
-      classroomId,
-      new ClassroomMember(dto.userId, dto.role)
-    );
-
-    return addedMember;
-  }
-
-  async removeMember(
-    classroomId: number,
-    requesterId: number,
-    userId: number
-  ) {
-    await this.findOne(classroomId);
-
-    const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
-    if (!isAdmin) throw new ForbiddenException('Only admin can remove members');
-
-    if (requesterId === userId) {
-      throw new ConflictException('Admin cannot remove themselves');
-    }
-
-    const member = await this.memberRepo.findMember(classroomId, userId);
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-
-    await this.memberRepo.removeMember(classroomId, userId);
-  }
-
-  async changeMemberRole(
-    classroomId: number,
-    requesterId: number,
-    userId: number,
-    role: Role
-  ): Promise<ClassroomMember> {
-    await this.findOne(classroomId);
-
-    const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
-    if (!isAdmin) throw new ForbiddenException('Only admin can change roles');
-
-    const member = await this.memberRepo.findMember(classroomId, userId);
-    if (!member) throw new NotFoundException('Member not found');
-
-    if (member.role === role) {
-      throw new ConflictException('User already has this role');
-    }
-
-    const updated = await this.memberRepo.updateRole(classroomId, userId, role);
-    return updated;
-  }
-
-  async listMembers(classroomId: number): Promise<ClassroomMember[]> {
-    await this.findOne(classroomId);
-    return this.memberRepo.findMembers(classroomId);
-  }
-
-  async getMember(classroomId: number, userId: number) {
-    await this.findOne(classroomId);
-
-    const member = await this.memberRepo.findMember(classroomId, userId);
-    if (!member) throw new NotFoundException('Member not found');
-
-    return member;
+  async delete(classroomId: number, userId: number) {
+    await this.membershipService.ensureRole(classroomId, userId, [Role.OWNER])
+    await this.findOne(classroomId, userId);
+    
+    await this.repo.deleteById(classroomId);
   }
 
   private generateClassCode(): string {

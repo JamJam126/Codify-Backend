@@ -99,9 +99,24 @@ export class ClassroomMemberRepositoryPrisma
     });
   }
 
+  async isOwner(classroomId: number, userId: number): Promise<boolean> {
+    const member = await this.prisma.classroomUser.findFirst({
+      where: { classroom_id: classroomId, user_id: userId, role: Role.OWNER },
+      select: { id: true },
+    });
+
+    return !!member;
+  }
+
   async isAdmin(classroomId: number, userId: number): Promise<boolean> {
     const member = await this.prisma.classroomUser.findFirst({
-      where: { classroom_id: classroomId, user_id: userId, role: Role.ADMIN },
+      where: { 
+        classroom_id: classroomId, 
+        user_id: userId, 
+        role: {
+          in: [Role.OWNER, Role.TEACHER]
+        } 
+      },
       select: { id: true },
     });
 

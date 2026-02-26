@@ -23,6 +23,7 @@ describe('AssignmentService', () => {
   /* ===================== Create Assignment ===================== */
   it('TC-CA-01: Valid creation', async () => {
     const dto = {
+      classroomId: 1,
       sectionId: 1,
       title: 'Assignment 1',
       description: 'Desc',
@@ -41,6 +42,7 @@ describe('AssignmentService', () => {
   /* ===================== Get Assignment ===================== */
   it('TC-GA-01: Get existing assignment', async () => {
     const created = await service.create({
+      classroomId: 1,
       sectionId: 1,
       title: 'Test Assignment',
       description: 'Desc',
@@ -61,6 +63,7 @@ describe('AssignmentService', () => {
   /* ===================== Update Assignment ===================== */
   it('TC-UA-01: Update existing assignment', async () => {
     const created = await service.create({
+      classroomId: 1,
       sectionId: 1,
       title: 'Old Title',
       description: 'Desc',
@@ -83,6 +86,7 @@ describe('AssignmentService', () => {
   /* ===================== Publish Assignment ===================== */
   it('TC-PA-01: Publish existing assignment', async () => {
     const created = await service.create({
+      classroomId: 1,
       sectionId: 1,
       title: 'Draft Assignment',
       description: 'Desc',
@@ -103,6 +107,7 @@ describe('AssignmentService', () => {
   /* ===================== Delete Assignment ===================== */
   it('TC-DA-01: Delete existing assignment', async () => {
     const created = await service.create({
+      classroomId: 1,
       sectionId: 1,
       title: 'To Delete',
       description: 'Desc',
