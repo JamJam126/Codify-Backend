@@ -25,9 +25,9 @@ export class FakeClassroomRepository implements ClassroomRepository {
     this.items.push(created);
 
     if (this.memberRepo) {
-      await this.memberRepo.addMember(
+      await this.memberRepo.addMemberBulks(
         created.id!,
-        new ClassroomMember(creatorId, Role.OWNER),
+        [new ClassroomMember(creatorId, Role.OWNER)],
       );
     }
     

@@ -5,18 +5,11 @@ import { Role } from '../domain/role.enum';
 export class FakeClassroomMemberRepository
   implements ClassroomMemberRepository
 {
-  private members: Map<number, ClassroomMember[]> = new Map();
-
-  async addMember(
-    classroomId: number,
-    member: ClassroomMember,
-  ): Promise<ClassroomMember> {
-    const list = this.members.get(classroomId) ?? [];
-    list.push(member);
-    this.members.set(classroomId, list);
-
-    return ClassroomMember.rehydrate({ ...member });
+  addMemberBulks(classroomId: number, members: ClassroomMember[]): Promise<ClassroomMember[]> {
+    throw new Error('Method not implemented.');
   }
+
+  private members: Map<number, ClassroomMember[]> = new Map();
 
   async removeMember(classroomId: number, userId: number): Promise<void> {
     const list = this.members.get(classroomId) ?? [];

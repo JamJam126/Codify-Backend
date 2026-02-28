@@ -2,7 +2,7 @@ import { ClassroomMember } from "./classroom-member.entity";
 import { Role } from "./role.enum";
 
 export interface ClassroomMemberRepository {
-  addMember(classroomId: number, member: ClassroomMember): Promise<ClassroomMember>;
+  addMemberBulks(classroomId: number, members: ClassroomMember[]): Promise<ClassroomMember[]>;
   removeMember(classroomId: number, userId: number): Promise<void>;
   updateRole(classroomId: number, userId: number, role: Role): Promise<ClassroomMember>;
   findMembers(classroomId: number): Promise<ClassroomMember[]>;

@@ -26,7 +26,6 @@ import {
 import { ClassroomService } from '../application/classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
-import { AddMemberDto } from './dto/add-member.dto';
 import { ClassroomResponseDto } from './dto/classroom-response.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMemberResponseDto } from './dto/classroom-member-response.dto';
@@ -34,6 +33,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../../../modules/auth/dto/current-user.dto';
 import { ClassroomMembershipService } from '../application/classroom-membership.service';
+import { AddMembersDto } from './dto/add-members.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -154,18 +154,18 @@ export class ClassroomsController {
   @Post(':classroomId/members')
   @ApiOperation({ summary: 'Add member to classroom' })
   @ApiParam({ name: 'classroomId', example: 1 })
-  @ApiBody({ type: AddMemberDto })
+  @ApiBody({ type: AddMembersDto })
   @ApiNoContentResponse({ description: 'Member added successfully' })
   @ApiForbiddenResponse({ description: 'Only admins can add members' })
   async addMember(
+    @Body() dto: AddMembersDto,
     @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Body() dto: AddMemberDto,
     @CurrentUser() user: CurrentUserDto
   ) {
-    await this.membershipService.addMember(
+    await this.membershipService.addMembers(
       classroomId, 
       user.id, 
-      dto
+      dto.members
     );
   }
 
