@@ -8,26 +8,24 @@ import { Role } from '../domain/role.enum';
 export class ClassroomMemberRepositoryPrisma
   implements ClassroomMemberRepository
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
-  async addMember(
+  async addMemberBulks(
     classroomId: number,
-    member: ClassroomMember,
-  ): Promise<ClassroomMember> {
-    const result = await this.prisma.classroomUser.create({
-      data: {
+    members: ClassroomMember[]
+  ): Promise<ClassroomMember[]> {
+    await this.prisma.classroomUser.createMany({
+      data: members.map(member => ({
         classroom_id: classroomId,
-        user_id: +member.userId,
+        user_id: member.userId,
         role: member.role,
-      },
+      })),
+      skipDuplicates: true,
     });
 
-    return ClassroomMember.rehydrate({
-      userId: result.user_id,
-      role: result.role as Role,
-    });
+    return members;
   }
-
+  
   async removeMember(classroomId: number, userId: number): Promise<void> {
     await this.prisma.classroomUser.delete({
       where: {
@@ -97,6 +95,28 @@ export class ClassroomMemberRepositoryPrisma
       role: result.role as Role,
       name: result.user.name,
     });
+  }
+
+  async findMembersByUserIds(classroomId: number, userIds: number[]): Promise<ClassroomMember[]> {
+    const results = await this.prisma.classroomUser.findMany({
+      where: {
+        classroom_id: classroomId,
+        user_id: { in: userIds }
+      },
+      include: {
+        user: {
+          select: { name: true }
+        }
+      }
+    });
+
+    return results.map(result =>
+      ClassroomMember.rehydrate({
+        userId: result.user_id,
+        role: result.role as Role,
+        name: result.user.name
+      })
+    );
   }
 
   async isOwner(classroomId: number, userId: number): Promise<boolean> {
