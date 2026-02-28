@@ -13,6 +13,8 @@ export class FakeClassroomMemberRepository
   }
   private members: Map<number, ClassroomMember[]> = new Map();
 
+  private members: Map<number, ClassroomMember[]> = new Map();
+
   async removeMember(classroomId: number, userId: number): Promise<void> {
     const list = this.members.get(classroomId) ?? [];
 		this.members.set(
