@@ -90,7 +90,7 @@ export class AssignmentController {
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @CurrentUser() user: CurrentUserDto,
   ) {
-    return this.service.findOne(id, classroomId, user.id);
+    return this.service.findAssignmentDetail(id, classroomId, user.id);
   }
 
   // =============== FIND BY CLASSROOM =================

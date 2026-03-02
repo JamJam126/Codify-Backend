@@ -63,7 +63,7 @@ export class Assignment {
   }
 
   unPublish(): void {
-    if (this.isPublished!) 
+    if (!this.isPublished) 
       throw new Error('The assignment is already unpublished');
 
     this.isPublished = false;

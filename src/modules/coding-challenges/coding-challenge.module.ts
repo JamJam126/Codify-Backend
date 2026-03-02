@@ -21,7 +21,8 @@ import { TestCaseService } from "./test-case.service";
       provide: "TestCaseRepository",
       useClass: TestCasePrismaRepository
     }
-  ]
+  ],
+  exports: [CodingChallengeService]
 })
 
 export class CodingChallengModule {}

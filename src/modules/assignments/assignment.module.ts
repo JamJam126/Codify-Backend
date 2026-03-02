@@ -7,9 +7,10 @@ import { FakeAssignmentRepository } from './repositories/assignment.fake.reposit
 import { ClassroomMembershipService } from '../classrooms/application/classroom-membership.service';
 import { ClassroomMemberRepositoryPrisma } from '../classrooms/infrastructure/classroom-member.prisma.repository';
 import { ClassroomsModule } from '../classrooms/classrooms.module';
+import { CodingChallengModule } from '../coding-challenges/coding-challenge.module';
 
 @Module({
-  imports: [ClassroomsModule],
+  imports: [ClassroomsModule, CodingChallengModule],
   controllers: [AssignmentController],
   providers: [
     PrismaService,
