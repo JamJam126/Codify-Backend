@@ -8,6 +8,10 @@ export class FakeClassroomMemberRepository
   addMemberBulks(classroomId: number, members: ClassroomMember[]): Promise<ClassroomMember[]> {
     throw new Error('Method not implemented.');
   }
+  findMembersByUserIds(classroomId: number, userIds: number[]): Promise<ClassroomMember[]> {
+    throw new Error('Method not implemented.');
+  }
+  private members: Map<number, ClassroomMember[]> = new Map();
 
   private members: Map<number, ClassroomMember[]> = new Map();
 

@@ -97,6 +97,28 @@ export class ClassroomMemberRepositoryPrisma
     });
   }
 
+  async findMembersByUserIds(classroomId: number, userIds: number[]): Promise<ClassroomMember[]> {
+    const results = await this.prisma.classroomUser.findMany({
+      where: {
+        classroom_id: classroomId,
+        user_id: { in: userIds }
+      },
+      include: {
+        user: {
+          select: { name: true }
+        }
+      }
+    });
+
+    return results.map(result =>
+      ClassroomMember.rehydrate({
+        userId: result.user_id,
+        role: result.role as Role,
+        name: result.user.name
+      })
+    );
+  }
+
   async isOwner(classroomId: number, userId: number): Promise<boolean> {
     const member = await this.prisma.classroomUser.findFirst({
       where: { classroom_id: classroomId, user_id: userId, role: Role.OWNER },
