@@ -52,6 +52,10 @@ export class CodingChallengeService{
     return this.repo.getAllChallenge(userId);
   }
 
+  async getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {
+    return this.repo.getAllChallengeByAssignment(assignmentId);
+  }
+
   async updateChallenge(id: number, dto: UpdateCodingChallengeDto, userId: number) {
     if (Object.keys(dto).length === 0) throw new BadRequestException('Update body cannot be empty');
     

@@ -134,6 +134,8 @@ model AssignmentCodingChallenge {
 
   assignment      Assignment      @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
   codingChallenge CodingChallenge @relation(fields: [codingChallenge_id], references: [id], onDelete: Cascade)
+
+  @@unique([assignment_id, codingChallenge_id])
 }
 
 model TestCase {

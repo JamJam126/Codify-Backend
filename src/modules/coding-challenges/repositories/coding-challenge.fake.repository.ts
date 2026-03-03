@@ -4,6 +4,9 @@ import { UpdateCodingChallengeDto } from "../dto/update-coding-challenge.dto";
 import { CodingChallengeRepository } from "./coding-challenge.repository";
 
 export class FakeCodingChallengeRepository implements CodingChallengeRepository {
+  getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {
+    throw new Error("Method not implemented.");
+  }
   private items: CodingChallenge[] = [];
   private idSeq = 1;
 

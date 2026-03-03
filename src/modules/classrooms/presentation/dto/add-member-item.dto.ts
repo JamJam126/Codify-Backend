@@ -3,7 +3,7 @@ import { IsNumber, IsEnum } from 'class-validator';
 import { Role } from '../../domain/role.enum';
 
 @ApiSchema({ name: 'AddMember' })
-export class AddMemberDto {
+export class AddMemberItemDto {
   @ApiProperty({ example: 1, description: 'ID of the user to add' })
   @IsNumber()
   userId: number;

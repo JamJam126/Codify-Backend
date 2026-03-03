@@ -62,6 +62,13 @@ export class Assignment {
     this.isPublished = true;
   }
 
+  unPublish(): void {
+    if (!this.isPublished) 
+      throw new Error('The assignment is already unpublished');
+
+    this.isPublished = false;
+  }
+
   update(props: {
     title?: string;
     description?: string,

@@ -3,6 +3,10 @@ import { Assignment } from '../assignment.entity';
 import { AssignmentRepository } from './assignment.repository';
 
 export class FakeAssignmentRepository implements AssignmentRepository {
+  attachChallenges(assignmentId: number, challengeIds: number[]): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   private items: Assignment[] = [];
   private idSeq = 1;
 
@@ -35,25 +39,6 @@ export class FakeAssignmentRepository implements AssignmentRepository {
       isPublished: found.isPublished,
     }) : null;
   
-  }
-
-  async findAllBySection(sectionId: number): Promise<Assignment[]> {
-    throw new Error('Method not implemented.');
-    // return this.items
-    //   .filter(a => a.sectionId === sectionId)
-    //   .sort((a, b) => a.position - b.position)
-    //   .map((a) => 
-    //     Assignment.rehydrate({
-    //       id: a.id!,
-    //       classroomId: assignment.classroomId,
-    //       sectionId: a.sectionId,
-    //       title: a.title,
-    //       description: a.description,
-    //       dueAt: a.dueAt,
-    //       position: a.position,
-    //       isPublished: a.isPublished,
-    //     })
-    //   )
   }
 
   async findAllByClassroom(classroomId: number): Promise<Assignment[]> {

@@ -1,10 +1,9 @@
 import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import type { ClassroomMemberRepository } from "../domain/classroom-member.repository";
 import type { ClassroomRepository } from "../domain/classroom.repository";
-import { AddMemberDto } from "../presentation/dto/add-member.dto";
+import { AddMemberItemDto } from "../presentation/dto/add-member-item.dto";
 import { ClassroomMember } from "../domain/classroom-member.entity";
 import { Role } from "../domain/role.enum";
-import { ClassroomService } from "./classroom.service";
 
 @Injectable()
 export class ClassroomMembershipService {
@@ -16,11 +15,11 @@ export class ClassroomMembershipService {
     private readonly classroomRepo: ClassroomRepository,
   ) { }
   
-  async addMember(
+  async addMembers(
     classroomId: number,
     requesterId: number,
-    dto: AddMemberDto
-  ): Promise<ClassroomMember> {
+    dto: AddMemberItemDto[]
+  ): Promise<ClassroomMember[]> {
     await this.ensureClassroomExists(classroomId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
@@ -28,21 +27,22 @@ export class ClassroomMembershipService {
       throw new ForbiddenException('Only owner or teacher can add members');
     }
 
-    if (dto.role === Role.OWNER) {
+    if (dto.some(m => m.role === Role.OWNER)) {
       throw new ForbiddenException('Role cannot be owner');
     }
 
-    const existing = await this.memberRepo.findMember(classroomId, dto.userId);
-    if (existing) {
-      throw new ConflictException('User already in classroom');
+    const userIds = dto.map(m => m.userId);
+
+    const uniqueIds = new Set(userIds);
+    if (uniqueIds.size !== userIds.length) {
+      throw new ConflictException('Duplicates users in request');
     }
 
-    const addedMember = await this.memberRepo.addMember(
-      classroomId,
-      new ClassroomMember(dto.userId, dto.role)
+    const members = dto.map(
+      m => new ClassroomMember(m.userId, m.role as Role)
     );
-
-    return addedMember;
+    
+    return await this.memberRepo.addMemberBulks(classroomId, members);
   }
 
   async removeMember(

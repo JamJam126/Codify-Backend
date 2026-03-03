@@ -1,12 +1,8 @@
-import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ClassroomRepository } from '../domain/classroom.repository';
-import type { ClassroomMemberRepository } from '../domain/classroom-member.repository';
 import { Classroom } from '../domain/classroom.entity';
 import { CreateClassroomDto } from '../presentation/dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../presentation/dto/update-classroom.dto';
-import { randomBytes } from 'crypto';
-import { AddMemberDto } from '../presentation/dto/add-member.dto';
-import { ClassroomMember } from '../domain/classroom-member.entity';
 import { Role } from '../domain/role.enum';
 import { ClassroomMembershipService } from './classroom-membership.service';
 

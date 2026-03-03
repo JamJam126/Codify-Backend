@@ -1,14 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import bcrypt from 'bcryptjs';
+import type { UserRepository } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+
+    @Inject("UserRepository")
+    private readonly repo: UserRepository,
+  ) { }
 
   async findByEmail(email: string) {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.repo.findByEmail(email);
+  }
+
+  async searchByEmail(email: string) {
+    return await this.repo.searchByEmail(email);
   }
 
   async createUser(dto: { email: string; password: string; name: string }) {

@@ -10,4 +10,7 @@ export class ClassroomMemberResponseDto {
 
   @ApiProperty({ example: 'John Doe', required: false, description: 'Optional name of the user' })
   name?: string;
+
+  @ApiProperty({ example: 'john@example.com', required: false, description: 'Email of the user' })
+  email?: string;
 }

@@ -6,6 +6,7 @@ export interface CodingChallengeRepository{
   findById(id: number): Promise<CodingChallenge>;
   findByTitle(title: string): Promise<CodingChallenge | undefined>;
   getAllChallenge(userId: number): Promise<CodingChallenge[]>;
+  getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]>;
   update(id: number, dto: UpdateCodingChallengeDto): Promise<CodingChallenge>;
   delete(id: number): Promise<void>;
 }

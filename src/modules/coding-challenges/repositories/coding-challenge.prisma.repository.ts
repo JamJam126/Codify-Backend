@@ -92,6 +92,31 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
     );
   }
 
+  async getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {
+    const results = await this.prisma.assignmentCodingChallenge.findMany({
+      where: {
+        assignment_id: assignmentId
+      },
+      include: {
+        codingChallenge: true
+      }
+    });
+
+    return results.map(r =>
+      CodingChallenge.rehydrate({
+        id: r.codingChallenge.id,
+        userId: r.codingChallenge.user_id,
+        tagId: r.codingChallenge.tag_id,
+        title: r.codingChallenge.title,
+        description: r.codingChallenge.description,
+        starterCode: r.codingChallenge.starter_code,
+        language: r.codingChallenge.language,
+        createdAt: r.codingChallenge.created_at,
+        updatedAt: r.codingChallenge.updated_at
+      })
+    );
+  }
+
   async update(id: number, dto: UpdateCodingChallengeDto): Promise<CodingChallenge> {
     const existing = await this.prisma.codingChallenge.findUnique({ where: { id } });
 

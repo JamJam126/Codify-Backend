@@ -6,6 +6,7 @@ import { Assignment } from '../assignment.entity';
 @Injectable()
 export class AssignmentPrismaRepository implements AssignmentRepository {
   constructor(private readonly prisma: PrismaService) {}
+
   async create(assignment: Assignment): Promise<Assignment> {
     const result = await this.prisma.assignment.create({
       data: {
@@ -31,6 +32,16 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     });
   }
 
+  async attachChallenges(assignmentId: number, challengeIds: number[]): Promise<void> {
+    await this.prisma.assignmentCodingChallenge.createMany({
+      data: challengeIds.map(id => ({
+        assignment_id: assignmentId,
+        codingChallenge_id: id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
 	async findById(id: number): Promise<Assignment | null> {
     const result = await this.prisma.assignment.findUnique({ where: { id } });
     if (!result) return null;
@@ -45,27 +56,6 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
       position: result.position,
       isPublished: result.is_published,
     });
-  }
-
-  async findAllBySection(sectionId: number): Promise<Assignment[]> {
-    throw new Error('Method not implemented.');
-    // const results = await this.prisma.assignment.findMany({
-    //   where: { section_id: sectionId },
-    //   orderBy: { position: 'asc' },
-    // });
-		
-    // return results.map(result =>
-    //   Assignment.rehydrate({
-    //     id: result.id,
-    //     classroomId: result.classroom_id,
-    //     sectionId: result.section_id,
-    //     title: result.title,
-    //     description: result.description,
-    //     dueAt: result.due_at,
-    //     position: result.position,
-    //     isPublished: result.is_published,
-    //   }),
-    // );
   }
 
   async findAllByClassroom(classroomId: number): Promise<Assignment[]> {

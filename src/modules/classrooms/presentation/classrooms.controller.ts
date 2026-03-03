@@ -26,7 +26,6 @@ import {
 import { ClassroomService } from '../application/classroom.service';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
-import { AddMemberDto } from './dto/add-member.dto';
 import { ClassroomResponseDto } from './dto/classroom-response.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMemberResponseDto } from './dto/classroom-member-response.dto';
@@ -34,6 +33,7 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../../../modules/auth/dto/current-user.dto';
 import { ClassroomMembershipService } from '../application/classroom-membership.service';
+import { AddMembersDto } from './dto/add-members.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -131,7 +131,6 @@ export class ClassroomsController {
     return this.service.update(classroomId, dto, user.id);
   }
 
-
   // =============== DELETE =================
   @Delete(':classroomId')
   @HttpCode(204)
@@ -154,18 +153,18 @@ export class ClassroomsController {
   @Post(':classroomId/members')
   @ApiOperation({ summary: 'Add member to classroom' })
   @ApiParam({ name: 'classroomId', example: 1 })
-  @ApiBody({ type: AddMemberDto })
+  @ApiBody({ type: AddMembersDto })
   @ApiNoContentResponse({ description: 'Member added successfully' })
   @ApiForbiddenResponse({ description: 'Only admins can add members' })
   async addMember(
+    @Body() dto: AddMembersDto,
     @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Body() dto: AddMemberDto,
     @CurrentUser() user: CurrentUserDto
   ) {
-    await this.membershipService.addMember(
+    await this.membershipService.addMembers(
       classroomId, 
       user.id, 
-      dto
+      dto.members
     );
   }
 
@@ -195,6 +194,7 @@ export class ClassroomsController {
       },
     },
   })
+    
   async changeMemberRole(
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @Param('userId', ParseIntPipe) userId: number,
@@ -222,8 +222,16 @@ export class ClassroomsController {
   @Get(':classroomId/members/:memberId')
   @ApiOperation({ summary: 'Get a specific classroom member' })
   @ApiParam({ name: 'classroomId', example: 1 })
-  @ApiParam({ name: 'userId', example: 2 })
-  @ApiOkResponse({ description: 'Member found', type: ClassroomMemberResponseDto })
+  @ApiOkResponse({
+    description: 'Member found',
+    schema: {
+      example: {
+        userId: 1,
+        role: 'STUDENT',
+        name: 'John Doe',
+      },
+    },
+  })
   @ApiNotFoundResponse({ description: 'Member not found' })
   async getMember(
     @Param('classroomId', ParseIntPipe) classroomId: number,

@@ -5,6 +5,9 @@ import { Assignment } from './assignment.entity';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { ClassroomMembershipService } from '../classrooms/application/classroom-membership.service';
 import { Role } from '../classrooms/domain/role.enum';
+import { CodingChallengeService } from '../coding-challenges/coding-chellenge.service';
+import { CodingChallenge } from '../coding-challenges/coding-challenge.entity';
+import { AssignmentDetailDto } from './dto/assignment-detail.dto';
 
 @Injectable()
 export class AssignmentService {
@@ -12,7 +15,8 @@ export class AssignmentService {
     @Inject('ASSIGNMENT_REPOSITORY')
     private readonly repo: AssignmentRepository,
 
-    private readonly membershipService: ClassroomMembershipService
+    private readonly membershipService: ClassroomMembershipService,
+    private readonly codingChallengeService: CodingChallengeService
   ) {}
 
   async create(
@@ -38,14 +42,61 @@ export class AssignmentService {
     return this.repo.create(assignment);
   }
 
+  async attachChallenges(
+    classroomId: number,
+    assignmentId: number,
+    userId: number,
+    challengeIds: number[],
+  ): Promise<void> {
+
+    await this.membershipService.ensureRole(
+      classroomId,
+      userId,
+      [Role.OWNER, Role.TEACHER],
+    );
+
+    const assignment = await this.repo.findById(assignmentId);
+    if (!assignment || assignment.classroomId !== classroomId) {
+      throw new NotFoundException('Assignment not found');
+    }
+
+    if (new Set(challengeIds).size !== challengeIds.length) {
+      throw new BadRequestException('Duplicate challenge IDs in request');
+    }
+
+    if (assignment.isPublished) {
+      throw new BadRequestException(
+        'Cannot modify a published assignment',
+      );
+    }
+
+    await this.repo.attachChallenges(assignmentId, challengeIds);
+  }
+
   async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
     const assignment = await this.repo.findById(id);
+
     if (!assignment || assignment.classroomId !== classroomId) {
       throw new NotFoundException(`Assignment ${id} not found`);
     }
     
     await this.membershipService.assertIsMember(classroomId, userId);
     return assignment;
+  }
+
+  async findAssignmentDetail(id: number, classroomId: number, userId: number):
+    Promise<AssignmentDetailDto>
+  {
+    const assignment = await this.findOne(id, classroomId, userId);
+    
+    await this.membershipService.assertIsMember(classroomId, userId);
+    const codingChallenges =
+      await this.codingChallengeService.getAllChallengeByAssignment(id);
+
+    return {
+      ...assignment,
+      codingChallenges: codingChallenges,
+    };
   }
 
   // async findAllBySection(sectionId: number): Promise<Assignment[]> {
@@ -62,7 +113,7 @@ export class AssignmentService {
     classroomId: number,
     userId: number,
     dto: UpdateAssignmentDto
-  ): Promise<Assignment> {
+  ): Promise<AssignmentDetailDto> {
     await this.membershipService.ensureRole(
       classroomId,
       userId,
@@ -72,14 +123,19 @@ export class AssignmentService {
     const assignment = await this.findOne(id, classroomId, userId);
     assignment.update(dto);
 
-    return this.repo.update(assignment);
+    const updated = await this.repo.update(assignment);
+    const codingChallenges = await this.codingChallengeService.getAllChallengeByAssignment(id);
+    return {
+      ...updated,
+      codingChallenges
+    }    
   }
 
   async publish(
     id: number,
     classroomId: number, 
     userId: number
-  ): Promise<Assignment> {
+  ): Promise<AssignmentDetailDto> {
     await this.membershipService.ensureRole(
       classroomId,
       userId,
@@ -88,8 +144,36 @@ export class AssignmentService {
 
     const assignment = await this.findOne(id, classroomId, userId);
     assignment.publish();
+    
+    const publishedAssignment = await this.repo.update(assignment);
+    const codingChallenges = await this.codingChallengeService.getAllChallengeByAssignment(id);
+    return {
+      ...publishedAssignment,
+      codingChallenges
+    }
+  }
 
-    return this.repo.update(assignment);
+  async unPublish(
+    id: number,
+    classroomId: number,
+    userId: number,
+  ): Promise<AssignmentDetailDto> {
+    await this.membershipService.ensureRole(
+      classroomId,
+      userId,
+      [Role.OWNER, Role.TEACHER]
+    );
+
+    const assignment = await this.findOne(id, classroomId, userId);
+    assignment.unPublish();
+
+
+    const unPublishedAssignment = await this.repo.update(assignment);
+    const codingChallenges = await this.codingChallengeService.getAllChallengeByAssignment(id);
+    return {
+      ...unPublishedAssignment,
+      codingChallenges
+    }
   }
   
   async delete(
