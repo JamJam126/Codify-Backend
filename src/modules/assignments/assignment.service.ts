@@ -73,6 +73,35 @@ export class AssignmentService {
     await this.repo.attachChallenges(assignmentId, challengeIds);
   }
 
+  async removeChallenge(
+    classroomId: number,
+    assignmentId: number,
+    challengeId: number,
+    userId: number,
+  ): Promise<void> {
+    await this.membershipService.ensureRole(
+      classroomId,
+      userId,
+      [Role.OWNER, Role.TEACHER]
+    );
+
+    const assignment = await this.repo.findById(assignmentId);
+    if (!assignment) {
+      throw new NotFoundException(
+        'Assignment not found'
+      );
+    }
+
+    if (assignment.isPublished) {
+      throw new BadRequestException('Cannot modify a published assignment');
+    }
+
+    const removed = await this.repo.removeChallenge(assignmentId, challengeId);
+    if (!removed) {
+      throw new NotFoundException('Challenge is not attached to this assignment');
+    }
+  }
+
   async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
     const assignment = await this.repo.findById(id);
 

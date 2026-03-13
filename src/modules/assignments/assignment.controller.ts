@@ -20,6 +20,7 @@ import {
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiBearerAuth,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 
 import { AssignmentService } from './assignment.service';
@@ -72,6 +73,29 @@ export class AssignmentController {
       assignmentId,
       user.id,
       dto.challengeIds,
+    );
+  }
+
+  @Delete(':id/challenges/:challengeId')
+  @ApiOperation({ summary: 'Remove a coding challenge from an assignment' })
+  @ApiParam({ name: 'classroomId', example: 3, description: 'Classroom ID' })
+  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
+  @ApiParam({ name: 'challengeId', example: 5, description: 'Coding challenge ID' })
+  @ApiNoContentResponse({ description: 'Challenge removed successfully' })
+  @ApiNotFoundResponse({ description: 'Assignment or challenge not found' })
+  @ApiBadRequestResponse({ description: 'Cannot modify a published assignment' })
+  @HttpCode(204)
+  removeChallenge(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Param('challengeId', ParseIntPipe) challengeId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) { 
+    return this.service.removeChallenge(
+      classroomId,
+      assignmentId,
+      challengeId,
+      user.id,
     );
   }
 

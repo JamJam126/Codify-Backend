@@ -3,6 +3,12 @@ import { Assignment } from '../assignment.entity';
 import { AssignmentRepository } from './assignment.repository';
 
 export class FakeAssignmentRepository implements AssignmentRepository {
+  removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+  challengeExistsInAssignment(assignmentId: number, challengeId: number): Promise<Boolean> {
+    throw new Error('Method not implemented.');
+  }
   attachChallenges(assignmentId: number, challengeIds: number[]): Promise<void> {
     throw new Error('Method not implemented.');
   }

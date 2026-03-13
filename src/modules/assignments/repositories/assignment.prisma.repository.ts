@@ -41,6 +41,28 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
       skipDuplicates: true,
     });
   }
+    
+  async removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {
+    const result = await this.prisma.assignmentCodingChallenge.deleteMany({
+      where: {
+        assignment_id: assignmentId,
+        codingChallenge_id: challengeId
+      }
+    });
+
+    return result.count > 0;
+  }
+
+  async challengeExistsInAssignment(assignmentId: number, challengeId: number): Promise<Boolean> {
+    const count  = await this.prisma.assignmentCodingChallenge.count({
+      where: {
+        assignment_id: assignmentId,
+        codingChallenge_id: challengeId
+      },
+    });
+
+    return count > 0;
+  }
 
 	async findById(id: number): Promise<Assignment | null> {
     const result = await this.prisma.assignment.findUnique({ where: { id } });
