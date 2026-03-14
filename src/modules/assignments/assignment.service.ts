@@ -79,6 +79,7 @@ export class AssignmentService {
     challengeId: number,
     userId: number,
   ): Promise<void> {
+
     await this.membershipService.ensureRole(
       classroomId,
       userId,
@@ -103,13 +104,14 @@ export class AssignmentService {
   }
 
   async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
+    await this.membershipService.assertIsMember(classroomId, userId);
+    
     const assignment = await this.repo.findById(id);
 
     if (!assignment || assignment.classroomId !== classroomId) {
       throw new NotFoundException(`Assignment ${id} not found`);
     }
     
-    await this.membershipService.assertIsMember(classroomId, userId);
     return assignment;
   }
 
