@@ -8,11 +8,15 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+      codify_evaluation:
+        condition: service_healthy
     environment:
       PORT: 4000
       REDIS_HOST: redis
       REDIS_PORT: 6379
       CODE_VOLUME_NAME: eduai-github-assistant-backend_code-temp
+      AUTOEVAL_BASE_URL: http://codify_evaluation:8000
+      DATABASE_URL: postgresql://postgres:your_postgres_password@host.docker.internal:5432/codify
     volumes:
       - code-temp:/code-temp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -38,5 +42,26 @@ services:
       - code-temp:/code-temp
     command: ["sleep", "infinity"]
 
+  codify_evaluation:
+    build:
+      context: ../Codify.works
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../Codify.works/.env
+    volumes:
+      - codify-evaluation-data:/app/data
+      - codify-evaluation-logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+
 volumes:
   code-temp:
+  codify-evaluation-data:
+  codify-evaluation-logs:
