@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AssignmentRepository } from './assignment.repository';
 import { PrismaService } from 'prisma/prisma.service';
 import { Assignment } from '../assignment.entity';
+import { UpdateAssignmentChallengeDto } from '../dto/update-assignment-challenge.dto';
 
 @Injectable()
 export class AssignmentPrismaRepository implements AssignmentRepository {
@@ -56,6 +57,21 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         },
       });
     }
+  }
+
+  async updateAssignmentChallenge(
+    assignmentChallengeId: number,
+    dto: UpdateAssignmentChallengeDto,
+  ) {
+    return this.prisma.assignmentChallenge.update({
+      where: { id: assignmentChallengeId },
+      data: {
+        title: dto.title,
+        description: dto.description,
+        starter_code: dto.starterCode,
+        language: dto.language,
+      },
+    });
   }
     
   async removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {

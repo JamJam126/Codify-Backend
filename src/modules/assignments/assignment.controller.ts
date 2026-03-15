@@ -31,6 +31,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { AttachChallengesDto } from './dto/attach-challenge.dto';
+import { UpdateAssignmentChallengeDto } from './dto/update-assignment-challenge.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -73,6 +74,31 @@ export class AssignmentController {
       assignmentId,
       user.id,
       dto.challengeIds,
+    );
+  }
+
+  @Patch(':id/challenges/:assignmentChallengeId')
+  @ApiOperation({ summary: 'Update assignment challenge snapshot' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
+  @ApiParam({
+    name: 'assignmentChallengeId',
+    example: 5,
+    description: 'Assignment challenge snapshot ID',
+  })
+  updateAssignmentChallenge(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Param('assignmentChallengeId', ParseIntPipe) assignmentChallengeId: number,
+    @Body() dto: UpdateAssignmentChallengeDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.updateAssignmentChallenge(
+      classroomId,
+      assignmentId,
+      assignmentChallengeId,
+      user.id,
+      dto,
     );
   }
 

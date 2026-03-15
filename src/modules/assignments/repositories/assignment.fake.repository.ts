@@ -1,8 +1,13 @@
 import { throwError } from 'rxjs';
 import { Assignment } from '../assignment.entity';
 import { AssignmentRepository } from './assignment.repository';
+import { AssignmentChallenge } from '@prisma/client';
+import { UpdateAssignmentChallengeDto } from '../dto/update-assignment-challenge.dto';
 
 export class FakeAssignmentRepository implements AssignmentRepository {
+  updateAssignmentChallenge(assignmentChallengeId: number, dto: UpdateAssignmentChallengeDto): Promise<AssignmentChallenge | null> {
+    throw new Error('Method not implemented.');
+  }
   removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
