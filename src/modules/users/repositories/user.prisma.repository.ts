@@ -7,10 +7,11 @@ import { Injectable } from "@nestjs/common";
 export class UserPrismaRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
   
-  async findByEmail(email: string): Promise<User | null> {
-    const result = await this.prisma.user.findFirst({
-      where: {
-        email: email
+  async findUser(userId: number): Promise<User | null> {
+    const result = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { 
+        avatar: true,
       }
     });
 
@@ -22,7 +23,43 @@ export class UserPrismaRepository implements UserRepository {
       id: result.id,
       name: result.name,
       email: result.email,
-      hashed_password: result.hashed_password
+      hashed_password: result.hashed_password,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+      profile: {
+        type: result.avatar?.type ?? 'GENERATED',
+        imageKey: result.avatar?.image_key,
+        color: result.avatar?.color
+      },
+    });
+  }
+  
+  async updateAvatar(userId: number, avatarKey: string): Promise<void> {
+    await this.prisma.userAvatar.update({
+      where: { id: userId },
+      data: {
+        image_key: avatarKey,
+        type: 'IMAGE'
+      }
+    });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const result = await this.prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!result) {
+      return null;
+    }
+
+    return User.rehydrate({
+      id: result.id,
+      name: result.name,
+      email: result.email,
+      hashed_password: result.hashed_password,
     });
   }
 
@@ -33,6 +70,9 @@ export class UserPrismaRepository implements UserRepository {
           contains: email,
           mode: 'insensitive'
         }
+      },
+      include: { 
+        avatar: true,
       }
     });
 
@@ -40,7 +80,12 @@ export class UserPrismaRepository implements UserRepository {
       return User.rehydrate({
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        profile: {
+          type: user.avatar?.type ?? 'GENERATED',
+          imageKey: user.avatar?.image_key,
+          color: user.avatar?.color
+        },
       });
     });
   }

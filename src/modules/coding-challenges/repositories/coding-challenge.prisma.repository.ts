@@ -93,27 +93,29 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
   }
 
   async getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {
-    const results = await this.prisma.assignmentCodingChallenge.findMany({
-      where: {
-        assignment_id: assignmentId
-      },
+    const results = await this.prisma.assignmentChallenge.findMany({
+      where: { assignment_id: assignmentId },
       include: {
-        codingChallenge: true
+        originalChallenge: {
+          include: {
+            tag: true
+          }
+        }
       }
     });
 
     return results.map(r =>
       CodingChallenge.rehydrate({
-        id: r.codingChallenge.id,
-        userId: r.codingChallenge.user_id,
-        tagId: r.codingChallenge.tag_id,
-        title: r.codingChallenge.title,
-        description: r.codingChallenge.description,
-        starterCode: r.codingChallenge.starter_code,
-        language: r.codingChallenge.language,
-        createdAt: r.codingChallenge.created_at,
-        updatedAt: r.codingChallenge.updated_at
-      })
+        id: r.id,
+        userId: r.original_challenge_id,
+        tagId: r.originalChallenge.tag_id,
+        title: r.title,
+        description: r.description,
+        starterCode: r.starter_code,
+        language: r.language,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      }),
     );
   }
 

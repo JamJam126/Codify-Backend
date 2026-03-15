@@ -1,156 +1,212 @@
-import { ClassroomRole, ClassroomLogoType } from "@prisma/client";
-
-import { prisma } from './prisma.client';
+import { ClassroomRole, AvatarType } from "@prisma/client";
+import { prisma } from "./prisma.client";
+import bcrypt from 'bcryptjs';
 
 async function main() {
-  // USERS
-  const [owner, teacher, student] = await Promise.all([
-    prisma.user.create({
-      data: {
-        name: "Alice Owner",
-        email: "alice@school.com",
-        hashed_password: "hashed_owner_pw",
-      },
-    }),
-    prisma.user.create({
-      data: {
-        name: "Bob Teacher",
-        email: "bob@school.com",
-        hashed_password: "hashed_teacher_pw",
-      },
-    }),
-    prisma.user.create({
-      data: {
-        name: "Charlie Student",
-        email: "charlie@school.com",
-        hashed_password: "hashed_student_pw",
-      },
-    }),
-  ]);
+  const hashedOwner = await bcrypt.hash("owner123", 10);
+  const hashedTeacher = await bcrypt.hash("teacher123", 10);
+  const hashedStudent = await bcrypt.hash("student123", 10);
 
-  // CLASSROOMS
-  const classrooms = await Promise.all([
-    prisma.classroom.create({
-      data: {
-        class_code: "CS101",
-        name: "Intro to Programming",
-        description: "Programming basics for beginners.",
-        logo: {
-          create: {
-            type: ClassroomLogoType.GENERATED,
-            color: "#4F46E5",
-          },
+  /*
+  USERS
+  */
+  const owner = await prisma.user.create({
+    data: {
+      name: "Alice Owner",
+      email: "alice@school.com",
+      hashed_password: hashedOwner,
+      avatar: {
+        create: {
+          type: AvatarType.GENERATED,
+          color: "#6366F1",
         },
       },
-    }),
-    prisma.classroom.create({
-      data: {
-        class_code: "JS201",
-        name: "JavaScript Fundamentals",
-        description: "Core JavaScript concepts and practice.",
-        logo: {
-          create: {
-            type: ClassroomLogoType.GENERATED,
-            color: "#10B981",
-          },
-        },
-      },
-    }),
-    prisma.classroom.create({
-      data: {
-        class_code: "ALGO301",
-        name: "Algorithms & Data Structures",
-        description: "Problem solving with algorithms.",
-        logo: {
-          create: {
-            type: ClassroomLogoType.GENERATED,
-            color: "#F59E0B",
-          },
-        },
-      },
-    }),
-  ]);
+    },
+  });
 
-  // CLASSROOM USERS (roles vary per classroom)
+  const teacher = await prisma.user.create({
+    data: {
+      name: "Bob Teacher",
+      email: "bob@school.com",
+      hashed_password: hashedTeacher,
+      avatar: {
+        create: {
+          type: AvatarType.GENERATED,
+          color: "#10B981",
+        },
+      },
+    },
+  });
+
+  const student = await prisma.user.create({
+    data: {
+      name: "Charlie Student",
+      email: "charlie@school.com",
+      hashed_password: hashedStudent,
+      avatar: {
+        create: {
+          type: AvatarType.GENERATED,
+          color: "#F59E0B",
+        },
+      },
+    },
+  });
+
+  /*
+  TAG
+  */
+  const tag = await prisma.tag.upsert({
+    where: { name: "Basics" },
+    update: {},
+    create: {
+      name: "Basics",
+    },
+  });
+
+  /*
+  CLASSROOMS
+  */
+  const cs101 = await prisma.classroom.create({
+    data: {
+      class_code: "CS101",
+      name: "Intro to Programming",
+      description: "Programming basics for beginners.",
+      logo: {
+        create: {
+          type: AvatarType.GENERATED,
+          color: "#4F46E5",
+        },
+      },
+    },
+  });
+
+  const js201 = await prisma.classroom.create({
+    data: {
+      class_code: "JS201",
+      name: "JavaScript Fundamentals",
+      description: "Core JavaScript concepts.",
+      logo: {
+        create: {
+          type: AvatarType.GENERATED,
+          color: "#10B981",
+        },
+      },
+    },
+  });
+
+  /*
+  CLASSROOM USERS
+  */
   await prisma.classroomUser.createMany({
     data: [
-      // CS101
-      { user_id: owner.id, classroom_id: classrooms[0].id, role: ClassroomRole.OWNER },
-      { user_id: teacher.id, classroom_id: classrooms[0].id, role: ClassroomRole.TEACHER },
-      { user_id: student.id, classroom_id: classrooms[0].id, role: ClassroomRole.STUDENT },
+      { user_id: owner.id, classroom_id: cs101.id, role: ClassroomRole.OWNER },
+      { user_id: teacher.id, classroom_id: cs101.id, role: ClassroomRole.TEACHER },
+      { user_id: student.id, classroom_id: cs101.id, role: ClassroomRole.STUDENT },
 
-      // JS201
-      { user_id: teacher.id, classroom_id: classrooms[1].id, role: ClassroomRole.OWNER },
-      { user_id: student.id, classroom_id: classrooms[1].id, role: ClassroomRole.STUDENT },
-
-      // ALGO301
-      { user_id: owner.id, classroom_id: classrooms[2].id, role: ClassroomRole.OWNER },
-      { user_id: student.id, classroom_id: classrooms[2].id, role: ClassroomRole.STUDENT },
+      { user_id: teacher.id, classroom_id: js201.id, role: ClassroomRole.OWNER },
+      { user_id: student.id, classroom_id: js201.id, role: ClassroomRole.STUDENT },
     ],
   });
 
-  // SECTIONS + ASSIGNMENTS + CHALLENGES
-  for (const classroom of classrooms) {
-    const section = await prisma.section.create({
-      data: {
-        classroom_id: classroom.id,
-        title: "Week 1",
-        position: 1,
-      },
-    });
-
-    await prisma.assignment.create({
-      data: {
-        classroom_id: classroom.id,
-        section_id: section.id,
-        title: "Basic Challenge",
-        description: "Introductory coding assignment.",
-        due_at: new Date('2030-01-20T23:59:59Z'), 
-        is_published: false,
-        position: 1,         
-      } ,
-    });
-
-    const tag=await prisma.tag.create({
-      data:{
-        name: "Term1"
-      }
-    })
-
-    const challenge = await prisma.codingChallenge.create({
-      data: {
-        user_id: teacher.id,
-        title: "Return a Value",
-        language: "javascript",
-        description:"hello ",
-        tag_id:tag.id,
-        starter_code: `function solve() {
+  /*
+  CODING CHALLENGE TEMPLATE
+  */
+  const challenge = await prisma.codingChallenge.create({
+    data: {
+      user_id: teacher.id,
+      tag_id: tag.id,
+      title: "Return 42",
+      language: "javascript",
+      description: "Return the number 42",
+      starter_code: `function solve() {
   // return the number 42
 }`,
+    },
+  });
+
+  await prisma.testCase.createMany({
+    data: [
+      {
+        challenge_id: challenge.id,
+        input: "",
+        expected_output: "42",
+        score: 10,
+        is_hidden: false,
       },
-    });
+      {
+        challenge_id: challenge.id,
+        input: "",
+        expected_output: "42",
+        score: 10,
+        is_hidden: true,
+      },
+    ],
+  });
 
-    await prisma.testCase.createMany({
-      data: [
-        {
-          challenge_id: challenge.id,
-          input: "",
-          expected_output: "42",
-          is_hidden: false,
-          score: 10
-        },
-        {
-          challenge_id: challenge.id,
-          input: "",
-          expected_output: "42",
-          is_hidden: true,
-          score: 10
-        },
-      ],
-    });
-  }
+  /*
+  SECTIONS
+  */
+  // const week1 = await prisma.section.create({
+  //   data: {
+  //     classroom_id: cs101.id,
+  //     title: "Week 1",
+  //     position: 1,
+  //   },
+  // });
 
-  console.log("🌱 Seeded 3 classrooms with shared users successfully!");
+  // const week2 = await prisma.section.create({
+  //   data: {
+  //     classroom_id: cs101.id,
+  //     title: "Week 2",
+  //     position: 2,
+  //   },
+  // });
+
+  /*
+  ASSIGNMENT
+  */
+  const assignment = await prisma.assignment.create({
+    data: {
+      classroom_id: cs101.id,
+      title: "First Coding Assignment",
+      description: "Solve your first coding challenge.",
+      due_at: new Date("2030-01-20T23:59:59Z"),
+      is_published: true,
+    },
+  });
+
+  /*
+  ASSIGNMENT CHALLENGE (copy from template)
+  */
+  const assignmentChallenge = await prisma.assignmentChallenge.create({
+    data: {
+      assignment_id: assignment.id,
+      original_challenge_id: challenge.id,
+      title: challenge.title,
+      description: challenge.description,
+      starter_code: challenge.starter_code,
+      language: challenge.language,
+    },
+  });
+
+  /*
+  COPY TEST CASES
+  */
+  const originalCases = await prisma.testCase.findMany({
+    where: { challenge_id: challenge.id },
+  });
+
+  await prisma.assignmentTestCase.createMany({
+    data: originalCases.map((c) => ({
+      assignment_challenge_id: assignmentChallenge.id,
+      input: c.input,
+      expected_output: c.expected_output,
+      score: c.score,
+      is_hidden: c.is_hidden,
+    })),
+  });
+
+  console.log("🌱 Database seeded successfully!");
 }
 
 main()

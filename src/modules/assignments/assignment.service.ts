@@ -8,6 +8,7 @@ import { Role } from '../classrooms/domain/role.enum';
 import { CodingChallengeService } from '../coding-challenges/coding-chellenge.service';
 import { CodingChallenge } from '../coding-challenges/coding-challenge.entity';
 import { AssignmentDetailDto } from './dto/assignment-detail.dto';
+import { UpdateAssignmentChallengeDto } from './dto/update-assignment-challenge.dto';
 
 @Injectable()
 export class AssignmentService {
@@ -32,11 +33,9 @@ export class AssignmentService {
 
     const assignment = Assignment.create({
       classroomId: classroomId,
-      sectionId: 1,
       title: dto.title,
       description: dto.description,
       dueAt: dto.dueAt,
-      position: dto.position,
     });
 
     return this.repo.create(assignment);
@@ -73,12 +72,53 @@ export class AssignmentService {
     await this.repo.attachChallenges(assignmentId, challengeIds);
   }
 
+  async updateAssignmentChallenge(
+    classroomId: number,
+    assignmentId: number,
+    assignmentChallengeId: number,
+    userId: number,
+    dto: UpdateAssignmentChallengeDto,
+  ) {
+
+    await this.membershipService.ensureRole(
+      classroomId,
+      userId,
+      [Role.OWNER, Role.TEACHER],
+    );
+
+    const assignment = await this.repo.findById(assignmentId);
+
+    if (!assignment || assignment.classroomId !== classroomId) {
+      throw new NotFoundException('Assignment not found');
+    }
+
+    if (assignment.isPublished) {
+      throw new BadRequestException(
+        'Cannot modify a published assignment',
+      );
+    }
+
+    const updated = await this.repo.updateAssignmentChallenge(
+      assignmentChallengeId,
+      dto,
+    );
+
+    if (!updated) {
+      throw new NotFoundException(
+        'Assignment challenge not found',
+      );
+    }
+
+    return updated;
+  }
+
   async removeChallenge(
     classroomId: number,
     assignmentId: number,
     challengeId: number,
     userId: number,
   ): Promise<void> {
+
     await this.membershipService.ensureRole(
       classroomId,
       userId,
@@ -103,13 +143,14 @@ export class AssignmentService {
   }
 
   async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
+    await this.membershipService.assertIsMember(classroomId, userId);
+    
     const assignment = await this.repo.findById(id);
 
     if (!assignment || assignment.classroomId !== classroomId) {
       throw new NotFoundException(`Assignment ${id} not found`);
     }
     
-    await this.membershipService.assertIsMember(classroomId, userId);
     return assignment;
   }
 

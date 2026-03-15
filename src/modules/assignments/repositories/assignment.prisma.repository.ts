@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AssignmentRepository } from './assignment.repository';
 import { PrismaService } from 'prisma/prisma.service';
 import { Assignment } from '../assignment.entity';
+import { UpdateAssignmentChallengeDto } from '../dto/update-assignment-challenge.dto';
 
 @Injectable()
 export class AssignmentPrismaRepository implements AssignmentRepository {
@@ -11,11 +12,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     const result = await this.prisma.assignment.create({
       data: {
         classroom_id: assignment.classroomId,
-        section_id: assignment.sectionId,
         title: assignment.title,
         description: assignment.description,
         due_at: assignment.dueAt,
-        position: assignment.position,
         is_published: assignment.isPublished,
       },
     });
@@ -23,41 +22,71 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     return Assignment.rehydrate({
       id: result.id,
       classroomId: result.classroom_id,
-      sectionId: result.section_id,
       title: result.title,
       description: result.description,
       dueAt: result.due_at,
-      position: result.position,
       isPublished: result.is_published,
     });
   }
 
   async attachChallenges(assignmentId: number, challengeIds: number[]): Promise<void> {
-    await this.prisma.assignmentCodingChallenge.createMany({
-      data: challengeIds.map(id => ({
-        assignment_id: assignmentId,
-        codingChallenge_id: id,
-      })),
-      skipDuplicates: true,
+    for (const challengeId of challengeIds) {
+      const challenge = await this.prisma.codingChallenge.findUnique({
+        where: { id: challengeId },
+        include: { test_cases: true },
+      });
+
+      if (!challenge) continue;
+
+      await this.prisma.assignmentChallenge.create({
+        data: {
+          assignment_id: assignmentId,
+          original_challenge_id: challenge.id,
+          title: challenge.title,
+          description: challenge.description,
+          starter_code: challenge.starter_code,
+          language: challenge.language,
+          test_cases: {
+            create: challenge.test_cases.map(tc => ({
+              input: tc.input,
+              expected_output: tc.expected_output,
+              score: tc.score,
+              is_hidden: tc.is_hidden,
+            })),
+          },
+        },
+      });
+    }
+  }
+
+  async updateAssignmentChallenge(
+    assignmentChallengeId: number,
+    dto: UpdateAssignmentChallengeDto,
+  ) {
+    return this.prisma.assignmentChallenge.update({
+      where: { id: assignmentChallengeId },
+      data: {
+        title: dto.title,
+        description: dto.description,
+        starter_code: dto.starterCode,
+        language: dto.language,
+      },
     });
   }
     
   async removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {
-    const result = await this.prisma.assignmentCodingChallenge.deleteMany({
-      where: {
-        assignment_id: assignmentId,
-        codingChallenge_id: challengeId
-      }
+    const result = await this.prisma.assignmentChallenge.deleteMany({
+      where: { assignment_id: assignmentId, original_challenge_id: challengeId },
     });
 
     return result.count > 0;
   }
 
   async challengeExistsInAssignment(assignmentId: number, challengeId: number): Promise<Boolean> {
-    const count  = await this.prisma.assignmentCodingChallenge.count({
+    const count  = await this.prisma.assignmentChallenge.count({
       where: {
         assignment_id: assignmentId,
-        codingChallenge_id: challengeId
+        original_challenge_id: challengeId
       },
     });
 
@@ -71,11 +100,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     return Assignment.rehydrate({
       id: result.id,
       classroomId: result.classroom_id,
-      sectionId: result.section_id,
       title: result.title,
       description: result.description,
       dueAt: result.due_at,
-      position: result.position,
       isPublished: result.is_published,
     });
   }
@@ -83,7 +110,6 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
   async findAllByClassroom(classroomId: number,userId:number): Promise<Assignment[]> {
     const results = await this.prisma.assignment.findMany({
       where: { classroom_id: classroomId },
-      orderBy: { position: 'asc' },
     });
 
     const role = await this.prisma.classroomUser.findFirst({
@@ -102,11 +128,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         Assignment.rehydrate({
           id: result.id,
           classroomId: result.classroom_id,
-          sectionId: result.section_id,
           title: result.title,
           description: result.description,
           dueAt: result.due_at,
-          position: result.position,
           isPublished: result.is_published,
         }),
       );
@@ -116,11 +140,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
       Assignment.rehydrate({
         id: result.id,
         classroomId: result.classroom_id,
-        sectionId: result.section_id,
         title: result.title,
         description: result.description,
         dueAt: result.due_at,
-        position: result.position,
         isPublished: result.is_published,
       }),
     );
@@ -133,7 +155,6 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         title: assignment.title,
         description: assignment.description,
         due_at: assignment.dueAt,
-        position: assignment.position,
         is_published: assignment.isPublished,
       }
     });
@@ -141,11 +162,9 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     return Assignment.rehydrate({
       id: result.id,
       classroomId: result.classroom_id,
-      sectionId: result.section_id,
       title: result.title,
       description: result.description,
       dueAt: result.due_at,
-      position: result.position,
       isPublished: result.is_published,
     });
   }

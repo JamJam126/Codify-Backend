@@ -12,9 +12,17 @@ enum ClassroomRole {
   STUDENT
 }
 
-enum ClassroomLogoType {
+enum AvatarType {
   IMAGE
   GENERATED
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  GRADING
+  GRADED
+  EVALUATED
 }
 
 model User {
@@ -25,8 +33,22 @@ model User {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  classroomUsers  ClassroomUser[]
-  codingChallenge CodingChallenge[]
+  avatar           UserAvatar?
+  classroomUsers   ClassroomUser[]
+  codingChallenges CodingChallenge[]
+  submissions      Submission[]
+}
+
+model UserAvatar {
+  id         Int        @id @default(autoincrement())
+  user_id    Int        @unique
+  type       AvatarType
+  image_key  String?
+  color      String?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Classroom {
@@ -39,7 +61,6 @@ model Classroom {
 
   users       ClassroomUser[]
   assignments Assignment[]
-  sections    Section[]
   logo        ClassroomLogo?
 }
 
@@ -59,7 +80,7 @@ model ClassroomUser {
 model ClassroomLogo {
   id           Int               @id @default(autoincrement())
   classroom_id Int               @unique
-  type         ClassroomLogoType
+  type         AvatarType
   image_url    String?
   color        String?
   created_at   DateTime          @default(now())
@@ -68,44 +89,30 @@ model ClassroomLogo {
   classroom Classroom @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
 }
 
-model Section {
-  id           Int    @id @default(autoincrement())
-  classroom_id Int
-  title        String
-  position     Int
-
-  classroom   Classroom    @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
-  assignments Assignment[]
-
-  @@unique([classroom_id, position])
-}
-
 model Assignment {
   id           Int @id @default(autoincrement())
   classroom_id Int
-  section_id   Int
 
   title        String
   description  String   @db.Text
   due_at       DateTime
   is_published Boolean  @default(false)
-  position     Int
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  classroom            Classroom                   @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
-  section              Section                     @relation(fields: [section_id], references: [id], onDelete: Cascade)
-  assignmentChallenges AssignmentCodingChallenge[]
+  classroom            Classroom              @relation(fields: [classroom_id], references: [id], onDelete: Cascade)
+  assignmentChallenges AssignmentChallenge[]
+  submissions          Submission[]
 }
 
 model Tag {
   id         Int      @id @default(autoincrement())
-  name       String
+  name       String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  codingChallenge CodingChallenge[]
+  codingChallenges CodingChallenge[]
 }
 
 model CodingChallenge {
@@ -122,20 +129,8 @@ model CodingChallenge {
   user                 User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   tag                  Tag                         @relation(fields: [tag_id], references: [id])
   test_cases           TestCase[]
-  assignmentChallenges AssignmentCodingChallenge[]
-}
-
-model AssignmentCodingChallenge {
-  id                 Int      @id @default(autoincrement())
-  assignment_id      Int
-  codingChallenge_id Int
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-
-  assignment      Assignment      @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
-  codingChallenge CodingChallenge @relation(fields: [codingChallenge_id], references: [id], onDelete: Cascade)
-
-  @@unique([assignment_id, codingChallenge_id])
+  assignmentChallenges AssignmentChallenge[]
+  codeSubmissions      CodeSubmission[]
 }
 
 model TestCase {
@@ -149,4 +144,76 @@ model TestCase {
   updated_at      DateTime @updatedAt
 
   challenge CodingChallenge @relation(fields: [challenge_id], references: [id], onDelete: Cascade)
+  results   TestCaseResult[]
+}
+
+model AssignmentChallenge {
+  id                  Int      @id @default(autoincrement())
+  assignment_id       Int
+  original_challenge_id Int
+  title               String
+  description         String   @db.Text
+  starter_code        String   @db.Text
+  language            String
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  assignment        Assignment      @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
+  originalChallenge CodingChallenge @relation(fields: [original_challenge_id], references: [id])
+
+  test_cases AssignmentTestCase[]
+  
+  @@unique([assignment_id, original_challenge_id])
+}
+
+model AssignmentTestCase {
+  id                      Int      @id @default(autoincrement())
+  assignment_challenge_id  Int
+  input                   String   @db.Text
+  expected_output         String   @db.Text
+  score                   Int
+  is_hidden               Boolean  @default(false)
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  assignmentChallenge AssignmentChallenge @relation(fields: [assignment_challenge_id], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id            Int              @id @default(autoincrement())
+  user_id       Int
+  assignment_id Int
+  status        SubmissionStatus
+  total_score   Int
+  submitted_at  DateTime         @default(now())
+  created_at    DateTime         @default(now())
+  updated_at    DateTime         @updatedAt
+
+  user         User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  assignment   Assignment       @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
+  codeSubmits  CodeSubmission[]
+  testResults  TestCaseResult[]
+
+  @@unique([user_id, assignment_id])
+}
+
+model CodeSubmission {
+  id            Int      @id @default(autoincrement())
+  code          String   @db.Text
+  challenge_id  Int
+  submission_id Int
+
+  challenge  CodingChallenge @relation(fields: [challenge_id], references: [id], onDelete: Cascade)
+  submission Submission      @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+}
+
+model TestCaseResult {
+  id            Int    @id @default(autoincrement())
+  submission_id Int
+  case_id       Int
+  passed        Boolean
+  actual_output String @db.Text
+
+  submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
+  testCase   TestCase   @relation(fields: [case_id], references: [id], onDelete: Cascade)
 }

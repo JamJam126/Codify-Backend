@@ -2,30 +2,24 @@ export class Assignment {
   constructor(
     public readonly id: number | null,
     public classroomId: number,
-    public sectionId: number,
     public title: string,
     public description: string,
     public dueAt: Date,
-    public position: number,
     public isPublished: boolean,
   ) {}
 
   static create(props: {
     classroomId: number;
-    sectionId: number;
     title: string;
     description: string;
     dueAt: Date;
-    position: number;
   }): Assignment {
     return new Assignment(
       null,
       props.classroomId,
-      props.sectionId,
       props.title,
       props.description,
       props.dueAt,
-      props.position,
       false,
     );
   };
@@ -33,21 +27,17 @@ export class Assignment {
   static rehydrate(props: {
     id: number;
     classroomId: number;
-    sectionId: number;
     title: string;
     description: string;
     dueAt: Date;
-    position: number;
     isPublished: boolean;
   }): Assignment {
     return new Assignment(
       props.id,
       props.classroomId,
-      props.sectionId,
       props.title,
       props.description,
       props.dueAt,
-      props.position,
       props.isPublished,
     );
   }

@@ -1,8 +1,13 @@
 import { throwError } from 'rxjs';
 import { Assignment } from '../assignment.entity';
 import { AssignmentRepository } from './assignment.repository';
+import { AssignmentChallenge } from '@prisma/client';
+import { UpdateAssignmentChallengeDto } from '../dto/update-assignment-challenge.dto';
 
 export class FakeAssignmentRepository implements AssignmentRepository {
+  updateAssignmentChallenge(assignmentChallengeId: number, dto: UpdateAssignmentChallengeDto): Promise<AssignmentChallenge | null> {
+    throw new Error('Method not implemented.');
+  }
   removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
@@ -20,11 +25,9 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     const rehydrated = Assignment.rehydrate({
       id: this.idSeq++,
       classroomId: assignment.classroomId,
-      sectionId: assignment.sectionId,
       title: assignment.title,
       description: assignment.description,
       dueAt: assignment.dueAt,
-      position: assignment.position,
       isPublished: assignment.isPublished,
     });
     this.items.push(rehydrated);
@@ -37,11 +40,9 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     return found ? Assignment.rehydrate({
       id: found.id!,
       classroomId: found.classroomId,
-      sectionId: found.sectionId,
       title: found.title,
       description: found.description,
       dueAt: found.dueAt,
-      position: found.position,
       isPublished: found.isPublished,
     }) : null;
   
@@ -50,16 +51,13 @@ export class FakeAssignmentRepository implements AssignmentRepository {
   async findAllByClassroom(classroomId: number): Promise<Assignment[]> {
     return this.items
       .filter(a => a.classroomId === classroomId)
-      .sort((a, b) => a.position - b.position)
       .map((a) => 
         Assignment.rehydrate({
           id: a.id!,
           classroomId: classroomId,
-          sectionId: a.sectionId,
           title: a.title,
           description: a.description,
           dueAt: a.dueAt,
-          position: a.position,
           isPublished: a.isPublished,
         })
       )
@@ -71,11 +69,9 @@ export class FakeAssignmentRepository implements AssignmentRepository {
     const updated = Assignment.rehydrate({
       id: assignment.id!,
       classroomId: assignment.classroomId,
-      sectionId: assignment.sectionId,
       title: assignment.title,
       description: assignment.description,
       dueAt: assignment.dueAt,
-      position: assignment.position,
       isPublished: assignment.isPublished,
     });
 
