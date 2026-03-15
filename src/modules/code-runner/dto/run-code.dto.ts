@@ -48,4 +48,5 @@ int main() {
 }`
     })
     code: string;
+    input?: string;
 }

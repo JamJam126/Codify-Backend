@@ -182,9 +182,13 @@ export class CodeRunnerProcessor implements OnModuleInit {
         fs.writeFileSync(filename, code);
 
         const image = language === "python" ? "code-runner-python" : "code-runner-c";
+        const safeInput = (job.data.input ?? "")
+            .replace(/"/g, '\\"')
+            .replace(/`/g, "\\`");
+
         const cmd = language === "python"
-            ? ["bash", "-c", `cp /code-temp/${baseFilename} /tmp/${baseFilename} && python3 /tmp/${baseFilename}`]
-            : ["bash", "-c", `cp /code-temp/${baseFilename} /tmp/${baseFilename} && gcc /tmp/${baseFilename} -o /tmp/${outBinary} -lm && /tmp/${outBinary}`];
+            ? ["bash", "-c", `cp /code-temp/${baseFilename} /tmp/${baseFilename} && printf "${safeInput}" | python3 /tmp/${baseFilename}`]
+            : ["bash", "-c", `cp /code-temp/${baseFilename} /tmp/${baseFilename} && gcc /tmp/${baseFilename} -o /tmp/${outBinary} -lm && printf "${safeInput}" | /tmp/${outBinary}`];
         
         let container: Docker.Container | null = null;
         let timedOut = false;

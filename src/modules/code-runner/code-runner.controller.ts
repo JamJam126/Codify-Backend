@@ -51,6 +51,7 @@ export class CodeRunnerController{
     const result = await this.codeRunnerService.runCode(
         body.language,
         body.code,
+        body.input,
     );
 
     return result; 

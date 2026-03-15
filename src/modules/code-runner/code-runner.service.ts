@@ -10,10 +10,11 @@ export class CodeRunnerService{
         private prismaService: PrismaService,
     ) { }
   
-  async runCode(langauge: string ,code: string){
+  async runCode(langauge: string ,code: string , input?: string){
     const job = await this.queueService.addJob("run-code" , {
         langauge,
         code,
+        input: input ?? "",
     }) 
     return {
         jobId: job.id,
