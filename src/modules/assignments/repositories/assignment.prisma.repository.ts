@@ -80,11 +80,37 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     });
   }
 
-  async findAllByClassroom(classroomId: number): Promise<Assignment[]> {
+  async findAllByClassroom(classroomId: number,userId:number): Promise<Assignment[]> {
     const results = await this.prisma.assignment.findMany({
       where: { classroom_id: classroomId },
       orderBy: { position: 'asc' },
     });
+
+    const role = await this.prisma.classroomUser.findFirst({
+      where: {
+          user_id: userId ,
+          classroom_id: classroomId,
+      },
+      select: {
+        role:true
+      }
+    });
+
+    if (role?.role === "STUDENT") {
+      const newResult = results.filter((result, index) => result.is_published == true);
+      return newResult.map(result =>
+        Assignment.rehydrate({
+          id: result.id,
+          classroomId: result.classroom_id,
+          sectionId: result.section_id,
+          title: result.title,
+          description: result.description,
+          dueAt: result.due_at,
+          position: result.position,
+          isPublished: result.is_published,
+        }),
+      );
+    }
 		
     return results.map(result =>
       Assignment.rehydrate({

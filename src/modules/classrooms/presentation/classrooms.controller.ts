@@ -240,4 +240,16 @@ export class ClassroomsController {
   ) {
     return this.membershipService.getMember(classroomId, memberId, user.id);
   }
+
+  @Post(':classroomId/leave')
+  @ApiOperation({ summary: 'Leave the classroom' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Member leaved successfully' })
+  async leaveClassroom(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.membershipService.leaveClassroom(classroomId, user.id);
+  }
 }

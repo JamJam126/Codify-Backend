@@ -5,6 +5,7 @@ import { CreateClassroomDto } from '../presentation/dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../presentation/dto/update-classroom.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMembershipService } from './classroom-membership.service';
+import { ClassroomResponseDto } from '../presentation/dto/classroom-response.dto';
 
 @Injectable()
 export class ClassroomService {
@@ -15,7 +16,7 @@ export class ClassroomService {
     private readonly membershipService: ClassroomMembershipService
   ) {}
 
-  async create(dto: CreateClassroomDto, userId: number): Promise<Classroom> {
+  async create(dto: CreateClassroomDto, userId: number): Promise<ClassroomResponseDto> {
     const classCode = this.generateClassCode();
     const classroom = Classroom.create({
       classCode,
@@ -34,8 +35,8 @@ export class ClassroomService {
     }
   }
 
-  async findOne(id: number, userId: number): Promise<Classroom> {
-    const classroom = await this.repo.findById(id);
+  async findOne(id: number, userId: number): Promise<ClassroomResponseDto> {
+    const classroom = await this.repo.findById(id,userId);
     if (!classroom) throw new NotFoundException('Classroom not found');
 
     await this.membershipService.assertIsMember(id, userId);
@@ -62,7 +63,7 @@ export class ClassroomService {
     if (dto.description !== undefined)
       classroom.updateDescription(dto.description);
 
-    return this.repo.update(classroom);
+    return this.repo.update(classroom,userId);
   }
 
   async delete(classroomId: number, userId: number) {

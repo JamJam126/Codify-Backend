@@ -2,6 +2,7 @@ import { ClassroomMember } from '../domain/classroom-member.entity';
 import { Classroom } from '../domain/classroom.entity';
 import { ClassroomRepository } from '../domain/classroom.repository';
 import { Role } from '../domain/role.enum';
+import { ClassroomResponseDto } from '../presentation/dto/classroom-response.dto';
 import { FakeClassroomMemberRepository } from './classroom-member.fake.repository';
 
 export class FakeClassroomRepository implements ClassroomRepository {
@@ -12,7 +13,7 @@ export class FakeClassroomRepository implements ClassroomRepository {
   private items: Classroom[] = [];
   private idSeq = 1;
 
-  async create(classroom: Classroom, creatorId: number): Promise<Classroom> {
+  async create(classroom: Classroom, creatorId: number): Promise<ClassroomResponseDto> {
     const created = Classroom.rehydrate({
       id: this.idSeq++,
       classCode: classroom.classCode,
@@ -31,10 +32,10 @@ export class FakeClassroomRepository implements ClassroomRepository {
       );
     }
     
-    return created;
+    return created as unknown as ClassroomResponseDto;
   }
 
-  async findById(id: number): Promise<Classroom | null> {
+  async findById(id: number,userId:number): Promise<ClassroomResponseDto | null> {
     const found = this.items.find(c => c.id === id);
 		return found ? Classroom.rehydrate({
 			id: found.id!,
@@ -43,7 +44,7 @@ export class FakeClassroomRepository implements ClassroomRepository {
 			description: found.description,
 			createdAt: found.createdAt!,
 			updatedAt: found.updatedAt!
-		}) : null;
+		}) as unknown as ClassroomResponseDto : null;
   }
 
   async findByClassCode(code: string): Promise<Classroom | null> {
@@ -58,7 +59,7 @@ export class FakeClassroomRepository implements ClassroomRepository {
 		}) : null;
 	}
 
-  async findAllByUser(userId: number): Promise<Classroom[]> {
+  async findAllByUser(userId: number): Promise<ClassroomResponseDto[]> {
     if (!this.memberRepo) return [];
     const results = await Promise.all(
       this.items.map(async c => {
@@ -67,10 +68,10 @@ export class FakeClassroomRepository implements ClassroomRepository {
       })
     );
 
-    return results.filter(c => c !== null) as Classroom[];
+    return results.filter(c => c !== null) as unknown as ClassroomResponseDto[];
   }
 
-  async update(classroom: Classroom): Promise<Classroom> {
+  async update(classroom: ClassroomResponseDto,userId:number): Promise<ClassroomResponseDto> {
     const index = this.items.findIndex(c => c.id === classroom.id);
 		if (index === -1) throw new Error('Classroom Not Found');
 		const updated = Classroom.rehydrate({
@@ -78,12 +79,12 @@ export class FakeClassroomRepository implements ClassroomRepository {
       classCode: classroom.classCode,
       name: classroom.name,
       description: classroom.description,
-      createdAt: classroom.createdAt!,
+      createdAt: new Date(),
       updatedAt: new Date(),
     });
 
 		this.items[index] = updated;
-		return updated;
+		return updated as unknown as ClassroomResponseDto;
   }
 
   async deleteById(id: number): Promise<void> {

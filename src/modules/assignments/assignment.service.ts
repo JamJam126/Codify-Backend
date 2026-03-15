@@ -134,7 +134,7 @@ export class AssignmentService {
 
   async findAllByClassroomId(classroomId: number, userId: number): Promise<Assignment[]> {
     await this.membershipService.assertIsMember(classroomId, userId);
-    return this.repo.findAllByClassroom(classroomId);
+    return this.repo.findAllByClassroom(classroomId,userId);
   }
 
   async update(

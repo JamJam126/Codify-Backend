@@ -20,7 +20,7 @@ export class ClassroomMembershipService {
     requesterId: number,
     dto: AddMemberItemDto[]
   ): Promise<ClassroomMember[]> {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,requesterId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) {
@@ -50,7 +50,7 @@ export class ClassroomMembershipService {
     requesterId: number,
     userId: number
   ) {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,requesterId);
 
     const isAdmin = await this.memberRepo.isAdmin(classroomId, requesterId);
     if (!isAdmin) {
@@ -75,7 +75,7 @@ export class ClassroomMembershipService {
     userId: number,
     role: Role
   ): Promise<ClassroomMember> {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,requesterId);
 
     const isOwner = await this.memberRepo.isOwner(classroomId, requesterId);
     if (!isOwner) {
@@ -100,12 +100,12 @@ export class ClassroomMembershipService {
   }
 
   async listMembers(classroomId: number, userId: number): Promise<ClassroomMember[]> {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,userId);
     return this.memberRepo.findMembers(classroomId);
   }
 
   async getMember(classroomId: number, memberId: number, userId: number) {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,userId);
 
     const member = await this.memberRepo.findMember(classroomId, memberId);
     if (!member) {
@@ -116,12 +116,12 @@ export class ClassroomMembershipService {
   }
 
   async ensureMemberInClassroom(classroomId: number, userId: number) {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,userId);
     await this.assertIsMember(classroomId, userId);
   }
 
   async assertIsMember(classroomId: number, userId: number): Promise<ClassroomMember> {
-    await this.ensureClassroomExists(classroomId);
+    await this.ensureClassroomExists(classroomId,userId);
     const member = await this.memberRepo.findMember(classroomId, userId);
     if (!member) {
       throw new ForbiddenException('Not a member of this classroom');
@@ -140,8 +140,25 @@ export class ClassroomMembershipService {
     return member;
   }
 
-  private async ensureClassroomExists(classroomId: number) {
-    const classroom = await this.classroomRepo.findById(classroomId);
+  async leaveClassroom(classroomId: number, userId: number) {
+    const member = await this.assertIsMember(classroomId, userId);
+    
+    if (!member) {
+      throw new ForbiddenException('You are not memeber of this class');
+    }
+
+    const isAdmin = await this.memberRepo.isAdmin(classroomId, userId);
+
+    if (isAdmin) {
+      throw new ForbiddenException('Owner Cannot leave classroom');
+    }
+
+    await this.memberRepo.removeMember(classroomId, userId);
+
+  }
+
+  private async ensureClassroomExists(classroomId: number,userId:number) {
+    const classroom = await this.classroomRepo.findById(classroomId,userId);
     if (!classroom) {
       throw new NotFoundException('Classroom not found');
     }
