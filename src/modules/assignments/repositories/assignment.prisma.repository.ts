@@ -33,31 +33,48 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
   }
 
   async attachChallenges(assignmentId: number, challengeIds: number[]): Promise<void> {
-    await this.prisma.assignmentCodingChallenge.createMany({
-      data: challengeIds.map(id => ({
-        assignment_id: assignmentId,
-        codingChallenge_id: id,
-      })),
-      skipDuplicates: true,
-    });
+    for (const challengeId of challengeIds) {
+      const challenge = await this.prisma.codingChallenge.findUnique({
+        where: { id: challengeId },
+        include: { test_cases: true },
+      });
+
+      if (!challenge) continue;
+
+      await this.prisma.assignmentChallenge.create({
+        data: {
+          assignment_id: assignmentId,
+          original_challenge_id: challenge.id,
+          title: challenge.title,
+          description: challenge.description,
+          starter_code: challenge.starter_code,
+          language: challenge.language,
+          test_cases: {
+            create: challenge.test_cases.map(tc => ({
+              input: tc.input,
+              expected_output: tc.expected_output,
+              score: tc.score,
+              is_hidden: tc.is_hidden,
+            })),
+          },
+        },
+      });
+    }
   }
     
   async removeChallenge(assignmentId: number, challengeId: number): Promise<boolean> {
-    const result = await this.prisma.assignmentCodingChallenge.deleteMany({
-      where: {
-        assignment_id: assignmentId,
-        codingChallenge_id: challengeId
-      }
+    const result = await this.prisma.assignmentChallenge.deleteMany({
+      where: { assignment_id: assignmentId, original_challenge_id: challengeId },
     });
 
     return result.count > 0;
   }
 
   async challengeExistsInAssignment(assignmentId: number, challengeId: number): Promise<Boolean> {
-    const count  = await this.prisma.assignmentCodingChallenge.count({
+    const count  = await this.prisma.assignmentChallenge.count({
       where: {
         assignment_id: assignmentId,
-        codingChallenge_id: challengeId
+        original_challenge_id: challengeId
       },
     });
 
