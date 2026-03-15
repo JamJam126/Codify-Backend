@@ -49,9 +49,6 @@ export class UserPrismaRepository implements UserRepository {
       where: {
         email: email,
       },
-      include: { 
-        avatar: true,
-      }
     });
 
     if (!result) {
@@ -62,6 +59,7 @@ export class UserPrismaRepository implements UserRepository {
       id: result.id,
       name: result.name,
       email: result.email,
+      hashed_password: result.hashed_password,
     });
   }
 
