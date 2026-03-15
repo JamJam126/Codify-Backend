@@ -1,4 +1,4 @@
-import { ClassroomRole, ClassroomLogoType } from "@prisma/client";
+import { ClassroomRole, AvatarType } from "@prisma/client";
 
 import { prisma } from './prisma.client';
 
@@ -37,7 +37,7 @@ async function main() {
         description: "Programming basics for beginners.",
         logo: {
           create: {
-            type: ClassroomLogoType.GENERATED,
+            type: AvatarType.GENERATED,
             color: "#4F46E5",
           },
         },
@@ -50,7 +50,7 @@ async function main() {
         description: "Core JavaScript concepts and practice.",
         logo: {
           create: {
-            type: ClassroomLogoType.GENERATED,
+            type: AvatarType.GENERATED,
             color: "#10B981",
           },
         },
@@ -63,7 +63,7 @@ async function main() {
         description: "Problem solving with algorithms.",
         logo: {
           create: {
-            type: ClassroomLogoType.GENERATED,
+            type: AvatarType.GENERATED,
             color: "#F59E0B",
           },
         },

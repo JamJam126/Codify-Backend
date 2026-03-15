@@ -12,7 +12,7 @@ enum ClassroomRole {
   STUDENT
 }
 
-enum ClassroomLogoType {
+enum AvatarType {
   IMAGE
   GENERATED
 }
@@ -33,9 +33,22 @@ model User {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
+  avatar           UserAvatar?
   classroomUsers   ClassroomUser[]
   codingChallenges CodingChallenge[]
   submissions      Submission[]
+}
+
+model UserAvatar {
+  id         Int        @id @default(autoincrement())
+  user_id    Int        @unique
+  type       AvatarType
+  image_key  String?
+  color      String?
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Classroom {
@@ -68,7 +81,7 @@ model ClassroomUser {
 model ClassroomLogo {
   id           Int               @id @default(autoincrement())
   classroom_id Int               @unique
-  type         ClassroomLogoType
+  type         AvatarType
   image_url    String?
   color        String?
   created_at   DateTime          @default(now())
