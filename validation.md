@@ -1553,3 +1553,102 @@ As a student, I want to receive execution feedback so I can improve my code.
 | **Expected Results** | API returns 200 OK. Response body contains: program output, pass/fail status per test case, and expected vs actual output for each test case. |
  
 ---
+
+# FEATURE 10: Submissions — CRUD Submissions
+ 
+**User Story:**
+- US-SUB-01: As a student, I want to submit my solution to a coding challenge so that my work can be evaluated.
+- US-SUB-02: As a student, I want to view my submissions so that I can review my past attempts.
+- US-SUB-03: As a student, I want to update my submission before the deadline so that I can improve my solution.
+- US-SUB-04: As a system, I must store submission results and link them to the assignment, student, and coding challenge.
+ 
+**Functional Scenario: Student Submits Solution**
+ 
+1. Student opens an assignment containing a coding challenge.
+2. Student writes code.
+3. Student submits the solution.
+4. Backend stores submission with status and result.
+5. Student can view submission history.
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-01: Student successfully creates a submission for a coding challenge |
+| **Purpose** | Verify that the API allows a student to submit a solution for a coding challenge inside an assignment. |
+| **Initiation Criteria** | Student is authenticated. Assignment exists. Coding challenge exists inside the assignment. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/assignments/{assignmentId}/submissions`.<br>2. Provide `{ "challengeId": 1, "sourceCode": "..." }` in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 201 Created. Submission is stored in the database with assignmentId, studentId, challengeId, and sourceCode. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-02: Student attempts to create a submission without providing an authentication token |
+| **Purpose** | Verify that the system requires authentication before allowing submission creation. |
+| **Initiation Criteria** | Assignment and coding challenge exist. No authentication token is present. |
+| **Execution Steps** | 1. Send a POST request to `/assignments/{assignmentId}/submissions`.<br>2. Provide valid submission data in the request body.<br>3. Do not include any Authorization header in the request. |
+| **Expected Results** | API returns 401 Unauthorized. Submission is not created. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-03: Student submits a request with missing source code |
+| **Purpose** | Ensure the API validates request body fields and rejects submissions without required data. |
+| **Initiation Criteria** | Student is authenticated. Assignment exists. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a POST request to `/assignments/{assignmentId}/submissions`.<br>2. Provide `{ "challengeId": 1 }` in the request body, omitting the sourceCode field.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 400 Bad Request with a validation error message indicating that sourceCode is required. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-04: Teacher retrieves all submissions for a specific assignment |
+| **Purpose** | Verify that the API returns all submissions associated with a specific assignment. |
+| **Initiation Criteria** | Assignment exists and has multiple submissions stored in the database. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a GET request to `/assignments/{assignmentId}/submissions`.<br>2. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Response body contains a list of all submissions associated with the assignment. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-05: Student retrieves a specific submission by its ID |
+| **Purpose** | Verify that the API returns the details of a specific submission when a valid submission ID is provided. |
+| **Initiation Criteria** | A submission with a known ID exists in the database. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a GET request to `/assignments/{assignmentId}/submissions/{submissionId}`.<br>2. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK with submission details including source code and execution status. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-06: Student tries to retrieve a submission using an invalid submission ID |
+| **Purpose** | Ensure the API handles non-existing submission IDs correctly and returns a clear error message. |
+| **Initiation Criteria** | Assignment exists. No submission with the provided ID exists in the database. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a GET request to `/assignments/{assignmentId}/submissions/999`.<br>2. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 404 Not Found with message "Submission not found". |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-07: Student successfully updates an existing submission |
+| **Purpose** | Verify that the API allows a student to update the source code of an existing submission. |
+| **Initiation Criteria** | Student is authenticated. A submission with a known ID exists. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a PUT request to `/assignments/{assignmentId}/submissions/{submissionId}`.<br>2. Provide `{ "sourceCode": "updated code..." }` in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 200 OK. Submission record is updated in the database with the new source code. |
+ 
+---
+ 
+| Test Case Field | Details |
+|---|---|
+| **Test Case ID: Test Case Name** | TC-SUB-08: Student tries to update a submission that does not exist |
+| **Purpose** | Verify that the system handles update requests for non-existing submissions and returns a clear error. |
+| **Initiation Criteria** | Assignment exists. No submission with the provided ID exists in the database. A valid authentication token is available. |
+| **Execution Steps** | 1. Send a PUT request to `/assignments/{assignmentId}/submissions/999`.<br>2. Provide `{ "sourceCode": "updated code..." }` in the request body.<br>3. Include a valid authentication token in the request header. |
+| **Expected Results** | API returns 404 Not Found. Submission update is not performed. |
+ 
+---
+
