@@ -22,7 +22,7 @@ export class CreateTestCaseDto {
     description: 'Expected output for the test case',
   })
   @IsString()
-  expected_output: string;
+  expectedOutput: string;
 
   @ApiProperty({
     example: 1,
@@ -39,5 +39,5 @@ export class CreateTestCaseDto {
   })
   @IsBoolean()
   @IsOptional()
-  is_hidden?: boolean;
+  isHidden?: boolean;
 }

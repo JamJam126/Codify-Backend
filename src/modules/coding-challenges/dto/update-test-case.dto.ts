@@ -17,7 +17,7 @@ export class UpdateTestCaseDto {
   })
   @IsString()
   @IsOptional()
-  expected_output?: string;
+  expectedOutput?: string;
 
   @ApiPropertyOptional({
     example: 1,
@@ -35,5 +35,5 @@ export class UpdateTestCaseDto {
   })
   @IsBoolean()
   @IsOptional()
-  is_hidden?: boolean;
+  isHidden?: boolean;
 }

@@ -26,9 +26,9 @@ export class TestCaseService {
       testCase = TestCase.create({
         challengeId: challengeId,
         input: dto.input,
-        expectedOutput: dto.expected_output,
+        expectedOutput: dto.expectedOutput,
         score: dto.score,
-        isHidden: dto.is_hidden,
+        isHidden: dto.isHidden,
       });
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -58,9 +58,9 @@ export class TestCaseService {
 
     const updatedTestCase = await this.repo.update(id, {
       input: dto.input,
-      expectedOutput: dto.expected_output,
+      expectedOutput: dto.expectedOutput,
       score: dto.score,
-      isHidden: dto.is_hidden,
+      isHidden: dto.isHidden,
     });
 
     return updatedTestCase;
