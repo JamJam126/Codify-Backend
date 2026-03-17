@@ -1,4 +1,4 @@
-import { CodingChallenge } from "src/modules/coding-challenges/coding-challenge.entity";
+import { CodingChallenge } from "src/modules/coding-challenges/domain/coding-challenge.entity";
 
 export class AssignmentDetailDto {
   id: number | null;

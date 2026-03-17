@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "prisma/prisma.service";
-import { TestCase } from "../test-case.entity";
-import { TestCaseRepository } from "./test-case.repository";
+import { TestCase } from "../domain/test-case.entity";
+import { TestCaseRepository } from "../domain/test-case.repository";
 
 @Injectable()
 export class TestCasePrismaRepository implements TestCaseRepository {

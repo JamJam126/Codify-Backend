@@ -5,8 +5,8 @@ import { Assignment } from './assignment.entity';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { ClassroomMembershipService } from '../classrooms/application/classroom-membership.service';
 import { Role } from '../classrooms/domain/role.enum';
-import { CodingChallengeService } from '../coding-challenges/coding-chellenge.service';
-import { CodingChallenge } from '../coding-challenges/coding-challenge.entity';
+import { CodingChallengeService } from '../coding-challenges/application/coding-chellenge.service';
+import { CodingChallenge } from '../coding-challenges/domain/coding-challenge.entity';
 import { AssignmentDetailDto } from './dto/assignment-detail.dto';
 import { UpdateAssignmentChallengeDto } from './dto/update-assignment-challenge.dto';
 

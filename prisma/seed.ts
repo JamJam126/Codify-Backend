@@ -60,6 +60,7 @@ async function main() {
     update: {},
     create: {
       name: "Basics",
+      user_id:1
     },
   });
 

@@ -2,11 +2,11 @@ export class CodingChallenge {
   constructor(
     public readonly id: number | null,
     public userId: number,
-    public tagId: number,
     public title: string,
     public description: string,
     public starterCode: string,
     public language: string,
+    public tagId:number,
     public createdAt?: Date,
     public updatedAt?: Date,
   ) {}
@@ -14,7 +14,7 @@ export class CodingChallenge {
   // create new entity
   static create(props: {
     userId: number;
-    tagId: number;
+    tagId: number ;
     title: string;
     description: string;
     starterCode: string;
@@ -23,11 +23,11 @@ export class CodingChallenge {
     return new CodingChallenge(
       null,
       props.userId,
-      props.tagId,
       props.title,
       props.description,
       props.starterCode,
       props.language,
+      props.tagId
     );
   }
 
@@ -35,7 +35,7 @@ export class CodingChallenge {
   static rehydrate(props: {
     id: number;
     userId: number;
-    tagId: number;
+    tagId: number ;
     title: string;
     description: string;
     starterCode: string;
@@ -46,14 +46,13 @@ export class CodingChallenge {
     return new CodingChallenge(
       props.id,
       props.userId,
-      props.tagId,
       props.title,
       props.description,
       props.starterCode,
       props.language,
+      props.tagId,
       props.createdAt,
       props.updatedAt
     );
   }
-
 }

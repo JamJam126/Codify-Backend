@@ -1,14 +1,16 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, UseGuards } from "@nestjs/common";
-import { CodingChallengeService } from "./coding-chellenge.service";
+import { CodingChallengeService } from "../application/coding-chellenge.service";
 import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
-import { CurrentUser } from "../../../src/common/decorators/current-user.decorator";
-import { CurrentUserDto } from "../auth/dto/current-user.dto";
-import { JwtAuthGuard } from "../../../src/common/guards/jwt-auth.guard";
+import { CurrentUser } from "../../../common/decorators/current-user.decorator";
+import { CurrentUserDto } from "../../auth/dto/current-user.dto";
+import { JwtAuthGuard } from "../../../common/guards/jwt-auth.guard";
 import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
 import { ApiTags, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiForbiddenResponse, ApiNotFoundResponse, ApiBearerAuth } from "@nestjs/swagger";
 import { CreateTestCaseDto } from "./dto/create-test-case.dto";
 import { UpdateTestCaseDto } from "./dto/update-test-case.dto";
-import { TestCaseService } from "./test-case.service";
+import { TestCaseService } from "../application/test-case.service";
+import { TagService } from "../application/tag.service";
+import { TagDto } from "./dto/tag.dto";
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -19,7 +21,68 @@ export class CodingChallengeController{
   constructor(
     private readonly challengeService: CodingChallengeService,
     private readonly testCaseService: TestCaseService,
+    private readonly tagService: TagService,
   ) { }
+
+  @Post("/tag")
+  @ApiOperation({ summary: 'Create a tag for challenges' })
+  @ApiBody({ type: TagDto })
+  @ApiCreatedResponse({ description: 'Tag case created successfully' })
+  createTag(
+    @CurrentUser() user: CurrentUserDto,
+    @Body() dto: TagDto
+  ) {
+    return this.tagService.create( user.id, dto);
+  }
+
+
+  @Get("/tag")
+  @ApiOperation({ summary: 'Get All tag from current user' })
+  @ApiOkResponse({ description: 'List of tag returned successfully' })
+  getTag(
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.tagService.getAll( user.id);
+  }
+
+  @Get("/tag/:id")
+  @ApiOperation({ summary: 'Get Specific Tag' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiOkResponse({ description: 'List current tah' })
+  getTagByID(
+    @CurrentUser() user: CurrentUserDto,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.tagService.getById( user.id,id);
+  }
+
+  @Patch("/tag/:id")
+  @ApiOperation({ summary: 'Update Specific Tag' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiOkResponse({ description: 'Test case updated successfully' })
+  @ApiForbiddenResponse({ description: 'Forbidden to update' })
+  @ApiNotFoundResponse({ description: 'Test case not found' })
+  updateTag(
+    @CurrentUser() user: CurrentUserDto,
+    @Body() dto: TagDto,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.tagService.update( user.id,id,dto);
+  }
+
+  @Delete("/tag/:id")
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete a tag' })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiOkResponse({ description: 'Tag deleted successfully' })
+  @ApiForbiddenResponse({ description: 'Forbidden to delete' })
+  @ApiNotFoundResponse({ description: 'Test case not found' })
+  deleteTag(
+    @CurrentUser() user: CurrentUserDto,
+    @Param("id", ParseIntPipe) id: number,
+  ) {
+    return this.tagService.delete( user.id,id);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new coding challenge' })

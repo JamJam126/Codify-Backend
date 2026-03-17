@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from "@nestjs/common";
-import { CodingChallenge } from "../coding-challenge.entity";
-import { UpdateCodingChallengeDto } from "../dto/update-coding-challenge.dto";
-import { CodingChallengeRepository } from "./coding-challenge.repository";
+import { CodingChallenge } from "../domain/coding-challenge.entity";
+import { UpdateCodingChallengeDto } from "../presentation/dto/update-coding-challenge.dto";
+import { CodingChallengeRepository } from "../domain/coding-challenge.repository";
 
 export class FakeCodingChallengeRepository implements CodingChallengeRepository {
   getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {

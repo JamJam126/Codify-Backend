@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException} from "@nestjs/common";
-import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
-import type { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
-import { CodingChallenge } from "./coding-challenge.entity";
-import { CurrentUserDto } from "../auth/dto/current-user.dto";
-import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
+import { CreateCodingChallengeDto } from "../presentation/dto/create-coding-challenge.dto";
+import type { CodingChallengeRepository } from "../domain/coding-challenge.repository";
+import { CodingChallenge } from "../domain/coding-challenge.entity";
+import { CurrentUserDto } from "../../auth/dto/current-user.dto";
+import { UpdateCodingChallengeDto } from "../presentation/dto/update-coding-challenge.dto";
 
 @Injectable()
 export class CodingChallengeService{
