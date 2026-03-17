@@ -6,9 +6,10 @@ import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { JobSuccessDto } from "./dto/job-success.dto";
 import { JobFailureDto } from "./dto/job-failure.dto";
 import { JobQueueDto } from "./dto/job-queue.dto";
+import { TestCodeDto } from "./dto/test-code.dto";
 
 @ApiBearerAuth('access-token')
-//@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiTags('code runner')
 @Controller("code-runner")
 export class CodeRunnerController{
@@ -50,6 +51,7 @@ export class CodeRunnerController{
     const result = await this.codeRunnerService.runCode(
         body.language,
         body.code,
+        body.input,
     );
 
     return result; 
@@ -83,5 +85,14 @@ export class CodeRunnerController{
     }catch(error){
         throw new HttpException("Job Not Found" , HttpStatus.NOT_FOUND);
     }
+  }
+
+  @Post("/test")
+  async testCode(@Body() body: TestCodeDto){
+      if (!body.language || !body.code || !body.challengeId) {
+          throw new HttpException("Missing language or Code or challengeId", HttpStatus.BAD_REQUEST);
+      }
+
+      return this.codeRunnerService.runTestCode(body.challengeId, body.code, body.language);
   }
 }

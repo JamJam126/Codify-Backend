@@ -32,24 +32,29 @@ git clone https://github.com/JamJam126/Codify-Backend.git
 cd EduAI-GitHub-Assistant-Backend
 ```
 
-2. Install project dependencies:
+1. Install project dependencies:
+
 ```bash
 pnpm install
 ```
 
-3. Install additional dependencies for the code runner:
+1. Install additional dependencies for the code runner:
+
 ```bash
 pnpm install bullmq dockerode redis uuid
 pnpm install -D @types/dockerode
 ```
+
 ## 🔐 Environment Variables
 
 Create a `.env` file from the example:
+
 ```bash
 cp .env.example .env
 ```
 
 Update variables as needed:
+
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/eduai"
 JWT_SECRET="your-secret-key"
@@ -57,11 +62,12 @@ REDIS_HOST="127.0.0.1"
 REDIS_PORT=6379
 PORT=3000
 ```
+
 Prisma **requires** `DATABASE_URL` to be defined.
 
 ## 🗄 Database Setup
 
-### Verify schema exists, check folder structure:
+### Verify schema exists, check folder structure
 
 ```
 src/
@@ -69,7 +75,7 @@ src/
     schema.prisma
 ```
 
-### If the database does **not yet exist**, create it manually in PostgreSQL:
+### If the database does **not yet exist**, create it manually in PostgreSQL
 
 ```bash
 createdb codify
@@ -82,20 +88,24 @@ CREATE DATABASE codify;
 ```
 
 ### Generate Prisma
+
 ```bash
 npx prisma generate
 ```
+
 This step **reads your schema.prisma** and creates:
 
-* DB client
-* TS types (User, Post, etc.)
+- DB client
+- TS types (User, Post, etc.)
 
 Verify:
+
 ```bash
 node_modules/@prisma/client/
 ```
 
 ### Apply Migration
+
 If the project already contains `/prisma/migrations/**`, run:
 
 ```bash
@@ -108,7 +118,7 @@ This:
 2. Applies needed SQL
 3. Regenerates Prisma client
 
-If the migrations folder is empty → the project creator didn’t include them, so you must run:
+If the migrations folder is empty → the project creator didn't include them, so you must run:
 
 ```bash
 npx prisma db push
@@ -118,7 +128,8 @@ npx prisma db push
 
 > ⚠ Never run db push if migrations already exist!
 
-### Seed the database with initial data (recommended):
+### Seed the database with initial data (recommended)
+
 ```bash
 npx prisma db seed
 ```
@@ -128,16 +139,19 @@ npx prisma db seed
 ### 1. Run Redis
 
 Redis is required for BullMQ job queue management.
+
 ```bash
 docker run -d --name redis -p 6379:6379 redis:latest
 ```
 
 Verify Redis is running:
+
 ```bash
 docker ps | grep redis
 ```
 
 Test Redis connection:
+
 ```bash
 redis-cli ping
 # Should return: PONG
@@ -145,33 +159,28 @@ redis-cli ping
 
 ### 2. Build Docker Image for C Runner
 
-Create `Dockerfile.c` in the project root:
-```dockerfile
-FROM gcc:latest
+The Dockerfile is already provided inside the `code-runner` folder. Navigate into it and build the image:
 
-WORKDIR /code
-
-COPY . /code
-
-CMD ["sleep", "infinity"]
-```
-
-Build the Docker image:
 ```bash
-docker build -f Dockerfile -t code-runner-c .
+cd code-runner
+docker build -t code-runner-c .
+cd ..
 ```
 
 Verify the image was created:
+
 ```bash
 docker images | grep code-runner-c
 ```
 
 Expected output:
+
 ```
-code-runner-c    latest    abc123def456    2 minutes ago    1.2GB
+code-runner-c    latest    abc123def456    2 minutes ago    200MB
 ```
 
 ## 🏃 Run Development Server
+
 ```bash
 pnpm start:dev
 ```
@@ -180,26 +189,90 @@ pnpm start:dev
 
 Swagger (OpenAPI) documentation is available once the server is running:
 
-http://localhost:3000/api
+<http://localhost:3000/api>
+
+## 🐳 Docker Compose Setup
+
+Docker Compose runs everything together — app, Redis, PostgreSQL, and pgAdmin — in one command. Use this instead of running services manually.
+
+### 1. Stop any running Redis container to avoid port conflicts
+
+```bash
+docker stop redis
+docker rm redis
+```
+
+### 2. Remove node_modules if present
+
+On Mac/Linux:
+
+```bash
+rm -rf node_modules
+```
+
+On Windows (PowerShell):
+
+```powershell
+Remove-Item -Recurse -Force node_modules
+```
+
+### 3. Build the code runner image
+
+```bash
+cd code-runner
+docker build -t code-runner-c .
+cd ..
+```
+
+### 4. Start all services
+
+```bash
+docker compose up --build
+```
+
+Once running, the API is available at:
+
+```
+http://localhost:3000
+```
+
+### Services
+
+| Service    | URL                       |
+|------------|---------------------------|
+| API        | <http://localhost:3000>     |
+| Swagger    | <http://localhost:3000/api> |
+| PostgreSQL | localhost:5432            |
+| Redis      | localhost:6379            |
+
+
+### Stop all services
+
+```bash
+docker compose down
+```
 
 ## 🧪 Unit Tests
 
 ### Test Location
+
 - All unit tests are co-located with the module they test:
+
 ```
 src/
   modules/
     classrooms/
       classroom.service.ts
-      classroom.service.spec.ts      # tests for classroom.service.ts
+      classroom.service.spec.ts
       classroom.controller.ts
-      classroom.controller.spec.ts   # tests for classroom.controller.ts
+      classroom.controller.spec.ts
     assignments/
       assignment.service.ts
-      assignment.service.spec.ts     # tests for assignment.service.ts
+      assignment.service.spec.ts
 ```
 
 ### Running Unit Tests
+
 Make sure dependencies are installed:
 
 ```bash
@@ -207,31 +280,34 @@ pnpm install
 ```
 
 Run the unit tests:
+
 ```bash
 pnpm test
 ```
 
 Or run in watch mode (reruns on file change):
+
 ```bash
 pnpm test:watch
 ```
-Notes
 
-Unit tests use fake repositories or mocks, so no database or Redis setup is needed.
+> Unit tests use mocks — no database or Redis setup needed.
 
 ## 🧪 Testing Code Runner
 
 Submit a code execution job:
+
 ```bash
-curl -X POST http://localhost:3000/run \
+curl -X POST http://localhost:3000/code-runner/run \
   -H "Content-Type: application/json" \
   -d '{
     "language": "c",
-    "code": "#include <stdio.h>\nint main() {\n    printf(\"Hello World!\\n\");\n    return 0;\n}"
+    "code": "#include \nint main() {\n    printf(\"Hello World!\\n\");\n    return 0;\n}"
   }'
 ```
 
 Expected response:
+
 ```json
 {
   "jobId": "1",
@@ -239,12 +315,14 @@ Expected response:
 }
 ```
 
-Check job status (replace `1` with actual job ID):
+Check job status:
+
 ```bash
-curl http://localhost:3000/status/1
+curl http://localhost:3000/code-runner/status/1
 ```
 
 Expected response:
+
 ```json
 {
   "jobId": "1",
@@ -258,7 +336,6 @@ Expected response:
 
 ## 🛑 Stop Services
 
-Stop and remove Redis container:
 ```bash
 docker stop redis
 docker rm redis
@@ -266,31 +343,40 @@ docker rm redis
 
 ## 🔁 Flow Summary
 
-After cloning the project, run these commands in order:
+### Local Development
 
 ```bash
-pnpm install                  # Install dependencies
-npx prisma generate           # Generate Prisma client & TS types
-npx prisma migrate dev        # Apply migrations & create tables (or use db push if no migrations)
-pnpm start:dev                # Start the development server
+pnpm install
+npx prisma generate
+npx prisma migrate dev
+cd code-runner && docker build -t code-runner-c . && cd ..
+docker run -d --name redis -p 6379:6379 redis:latest
+pnpm start:dev
 ```
 
+### Docker Compose
+
+```bash
+docker stop redis && docker rm redis
+cd code-runner && docker build -t code-runner-c . && cd ..
+docker compose up --build
+```
 
 ## 📘 Common Prisma Workflows
 
-| Situation / Action | Command | Notes |
-|-------------------|---------|-------|
-| First-time database setup             | `npx prisma migrate dev` | Applies migrations & creates DB tables |
+| Situation / Action                    | Command                  | Notes                                                  |
+|---------------------------------------|--------------------------|--------------------------------------------------------|
+| First-time database setup             | `npx prisma migrate dev` | Applies migrations & creates DB tables                 |
 | No migrations exist                   | `npx prisma db push`     | Creates tables directly from schema without migrations |
-| Schema (`schema.prisma`) changed      | `npx prisma migrate dev` | Generates new migration and updates DB |
-| Database changed manually             | `npx prisma db pull`     | Updates `schema.prisma` to match DB |
-| Prisma client missing / types missing | `npx prisma generate`    | Regenerates client without touching DB |
-
+| Schema (`schema.prisma`) changed      | `npx prisma migrate dev` | Generates new migration and updates DB                 |
+| Database changed manually             | `npx prisma db pull`     | Updates `schema.prisma` to match DB                    |
+| Prisma client missing / types missing | `npx prisma generate`    | Regenerates client without touching DB                 |
 
 ## 🧱 Project Structure and Architecture Overview
 
-See [docs/ORGANIZATION.md](docs/ORGANIZATION.md) for full explanation of folders and modules. 
+See [docs/ORGANIZATION.md](docs/ORGANIZATION.md) for full explanation of folders and modules.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for backend architecture and module flow.
 
 ---
+

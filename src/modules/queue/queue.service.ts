@@ -9,7 +9,7 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     constructor(private readonly configService: ConfigService) { }
 
     async onModuleInit() {
-        this.queue = new Queue("codifyQueue0", {
+        this.queue = new Queue("codifyQueue", {
             connection: {
                 host: this.configService.get("REDIS_HOST") || "127.0.0.1",
                 port: this.configService.get("REDIS_PORT") || 6379
