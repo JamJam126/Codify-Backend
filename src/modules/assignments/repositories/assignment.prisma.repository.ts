@@ -46,6 +46,7 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
           description: challenge.description,
           starter_code: challenge.starter_code,
           language: challenge.language,
+          difficulty:challenge.difficulty,
           test_cases: {
             create: challenge.test_cases.map(tc => ({
               input: tc.input,
@@ -70,6 +71,7 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         description: dto.description,
         starter_code: dto.starterCode,
         language: dto.language,
+        difficulty:dto.difficulty,
       },
     });
   }

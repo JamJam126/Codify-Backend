@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "prisma/prisma.service";
-import { CodingChallenge } from "../coding-challenge.entity";
-import { UpdateCodingChallengeDto } from "../dto/update-coding-challenge.dto";
-import { CodingChallengeRepository } from "./coding-challenge.repository";
+import { CodingChallenge } from "../domain/coding-challenge.entity";
+import { UpdateCodingChallengeDto } from "../presentation/dto/update-coding-challenge.dto";
+import { CodingChallengeRepository } from "../domain/coding-challenge.repository";
 
 @Injectable()
 export class CodingChallengePrismaRepository implements CodingChallengeRepository {
@@ -12,21 +12,26 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
     const result=await this.prisma.codingChallenge.create({
       data:{
         user_id:challenge.userId,
-        tag_id:challenge.tagId,
         title:challenge.title,
         description:challenge.description,
         starter_code:challenge.starterCode,
-        language:challenge.language
+        language:challenge.language,
+        tag_id: challenge.tagId ?? null
+      },
+      include:{
+        tag:true
       }
     })
     return CodingChallenge.rehydrate({
       id: result.id,
       userId: result.user_id,
       tagId: result.tag_id,
+      tag:result.tag?.name,
       title: result.title,
       description: result.description,
       starterCode: result.starter_code,
       language: result.language,
+      difficulty:result.difficulty,
       createdAt: result.created_at,
       updatedAt: result.updated_at
     })
@@ -34,7 +39,10 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
 
   async findById(id: number): Promise<CodingChallenge> {
     const result = await this.prisma.codingChallenge.findUnique({
-      where: { id: id }
+      where: { id: id },
+      include:{
+        tag:true
+      }
     });
 
     if (!result) {
@@ -45,10 +53,12 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
       id: result.id,
       userId: result.user_id,
       tagId: result.tag_id,
+      tag:result.tag?.name,
       title: result.title,
       description: result.description,
       starterCode: result.starter_code,
       language: result.language,
+      difficulty:result.difficulty,
       createdAt: result.created_at,
       updatedAt: result.updated_at
     });
@@ -57,16 +67,21 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
   async findByTitle(title: string): Promise<CodingChallenge | undefined> {
     const result = await this.prisma.codingChallenge.findFirst({
       where: { title: title },
+      include:{
+        tag:true
+      }
     });
 
     return result ? CodingChallenge.rehydrate({
       id: result.id,
       userId: result.user_id,
       tagId: result.tag_id,
+      tag:result.tag?.name,
       title: result.title,
       description: result.description,
       starterCode: result.starter_code,
       language: result.language,
+      difficulty:result.difficulty,
       createdAt: result.created_at,
       updatedAt: result.updated_at
     }) : undefined;
@@ -74,7 +89,10 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
 
   async getAllChallenge(userId: number): Promise<CodingChallenge[]> {
     const results = await this.prisma.codingChallenge.findMany({
-      where: { user_id: userId }
+      where: { user_id: userId },
+      include:{
+        tag:true
+      }
     });
 
     return results.map(r =>
@@ -82,10 +100,12 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
         id: r.id,
         userId: r.user_id,
         tagId: r.tag_id,
+        tag:r.tag?.name,
         title: r.title,
         description: r.description,
         starterCode: r.starter_code,
         language: r.language,
+        difficulty:r.difficulty,
         createdAt: r.created_at,
         updatedAt: r.updated_at
       })
@@ -109,10 +129,12 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
         id: r.id,
         userId: r.original_challenge_id,
         tagId: r.originalChallenge.tag_id,
+        tag:r.originalChallenge.tag?.name,
         title: r.title,
         description: r.description,
         starterCode: r.starter_code,
         language: r.language,
+        difficulty:r.difficulty,
         createdAt: r.created_at,
         updatedAt: r.updated_at,
       }),
@@ -133,6 +155,9 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
         description: dto.description ?? existing.description,
         starter_code: dto.starterCode ?? existing.starter_code,
         language: dto.language ?? existing.language
+      },
+      include:{
+        tag:true
       }
     });
 
@@ -140,10 +165,12 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
       id: updated.id,
       userId: updated.user_id,
       tagId: updated.tag_id,
+      tag:updated.tag?.name,
       title: updated.title,
       description: updated.description,
       starterCode: updated.starter_code,
       language: updated.language,
+      difficulty:updated.difficulty,
       createdAt: updated.created_at,
       updatedAt: updated.updated_at
     });

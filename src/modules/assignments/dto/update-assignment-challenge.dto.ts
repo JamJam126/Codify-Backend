@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Difficulty } from 'src/modules/coding-challenges/presentation/dto/create-coding-challenge.dto';
 
 export class UpdateAssignmentChallengeDto {
   @ApiPropertyOptional()
@@ -21,4 +22,8 @@ export class UpdateAssignmentChallengeDto {
   @IsOptional()
   @IsString()
   language?: string;
+
+  @ApiPropertyOptional({ enum: Difficulty, example: Difficulty.EASY, description: 'Role of the new member' })
+  @IsEnum(Difficulty)
+  difficulty?: Difficulty;
 }

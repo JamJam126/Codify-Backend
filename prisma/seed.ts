@@ -60,6 +60,7 @@ async function main() {
     update: {},
     create: {
       name: "Basics",
+      user_id:1
     },
   });
 
@@ -186,6 +187,7 @@ async function main() {
       description: challenge.description,
       starter_code: challenge.starter_code,
       language: challenge.language,
+      difficulty: challenge.difficulty
     },
   });
 

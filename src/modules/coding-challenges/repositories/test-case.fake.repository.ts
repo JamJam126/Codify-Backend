@@ -1,5 +1,5 @@
-import { TestCase } from '../test-case.entity';
-import { TestCaseRepository } from './test-case.repository';
+import { TestCase } from '../domain/test-case.entity';
+import { TestCaseRepository } from '../domain/test-case.repository';
 
 export class FakeTestCaseRepository implements TestCaseRepository {
   private items: TestCase[] = [];

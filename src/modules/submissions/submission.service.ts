@@ -6,7 +6,7 @@ import { Submission } from "./submission.entity";
 import { SubmissionStatus } from "./submissionStatus.enum";
 import type { SubmissionRepository } from "./repositories/submission.repository";
 import { CodeSubmission } from "./challengeSubmission.entity";
-import { CodingChallengeService } from "../coding-challenges/coding-chellenge.service";
+import { CodingChallengeService } from "../coding-challenges/application/coding-chellenge.service";
 
 @Injectable() 
 export class SubmissionService {

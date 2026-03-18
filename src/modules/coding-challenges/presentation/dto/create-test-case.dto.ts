@@ -3,12 +3,6 @@ import { ApiProperty, ApiPropertyOptional, ApiSchema } from '@nestjs/swagger';
 
 @ApiSchema({ name: 'CreateTestCase' })
 export class CreateTestCaseDto {
-  @ApiProperty({
-    example: 1,
-    description: 'ID of the coding challenge this test case belongs to',
-  })
-  @IsInt()
-  challenge_id: number;
 
   @ApiProperty({
     example: '5\n10\n15',
