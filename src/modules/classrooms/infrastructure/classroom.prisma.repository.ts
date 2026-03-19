@@ -82,13 +82,39 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
     });
   }
 
-  async findById(id: number, userId: number): Promise<ClassroomResponseDto | null> {
+  async findById(classroomId: number): Promise<Classroom | null> {
     const result = await this.prisma.classroom.findUnique({
-      where: { id },
+      where: { id: classroomId },
+    });
+
+    return result ? Classroom.rehydrate({
+      id: result.id,
+      classCode: result.class_code,
+      name: result.name,
+      description: result.description ?? undefined,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at
+    }) : null;
+  }
+
+  async findByIdWithDetails(id: number, userId: number): Promise<ClassroomResponseDto | null> {
+    const result = await this.prisma.classroom.findFirst({
+      where: {
+        id,
+        users: {
+          some: {
+            user_id: userId,
+          }
+        }
+      },
       include: {
         users: {
-          where: { user_id: userId },
-          select: { role: true },
+          where: {
+            user_id: userId
+          },
+          select: {
+            role: true,
+          },
         },
         _count: {
           select: {
@@ -104,7 +130,7 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
 
     if (!result) return null;
 
-    const role = result.users[0]?.role ?? Role.STUDENT;
+    const role = result.users[0]?.role;
 
     return new ClassroomResponseDto({
       id: result.id,
@@ -134,42 +160,14 @@ export class ClassroomRepositoryPrisma implements ClassroomRepository {
     });
   }
 
-  async update(classroom: ClassroomResponseDto, userId: number): Promise<ClassroomResponseDto> {
-    const result = await this.prisma.classroom.update({
+  async update(classroom: Classroom): Promise<void> {
+    await this.prisma.classroom.update({
       where: { id: classroom.id! },
       data: {
         name: classroom.name,
         description: classroom.description ?? null,
         updated_at: classroom.updatedAt,
       },
-      include: {
-        users: {
-          where: { user_id: userId },
-          select: { role: true },
-        },
-        _count: {
-          select: {
-            users: {
-              where: {
-                role: 'STUDENT',
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const role = result.users[0]?.role ?? Role.STUDENT;
-
-    return new ClassroomResponseDto({
-      id: result.id,
-      classCode: result.class_code,
-      name: result.name,
-      description: result.description ?? undefined,
-      createdAt: result.created_at.toISOString(),
-      updatedAt: result.updated_at.toISOString(),
-      role,
-      student:result._count.users
     });
   }
 

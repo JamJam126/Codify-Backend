@@ -150,17 +150,38 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
     );
   }
 
-  async findOneWithChallenges(id: number, classroomId: number, userId: number) {
+  async findOneWithChallenges(id: number) {
     const result = await this.prisma.assignment.findUnique({
       where: {
-        id: id
+        id: id,
       },
       include: {
         assignmentChallenges: true
       }
     });
 
-    return result;
+  return result ? {
+    id: result.id,
+    classroomId: result.classroom_id,
+    title: result.title,
+    description: result.description,
+    dueAt: result.due_at,
+    isPublished: result.is_published,
+    createdAt: result.created_at,
+    updatedAt: result.updated_at,
+    assignmentChallenges: result.assignmentChallenges.map((challenge) => ({
+      id: challenge.id,
+      assignmentId: challenge.assignment_id,
+      originalChallenge_id: challenge.original_challenge_id,
+      title: challenge.title,
+      description: challenge.description,
+      starterCode: challenge.starter_code,
+      language: challenge.language,
+      difficulty: challenge.difficulty,
+      createdAt: challenge.created_at,
+      updatedAt: challenge.updated_at,
+    })),
+    } : null;
   }
 
   async findAssignmentChallengeDetail(assignmentId: number, challengeId: number) {
@@ -176,7 +197,28 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
       }
     });
 
-    return result;
+    return result ? {
+      id: result.id,
+      assignmentId: result.assignment_id,
+      originalChallengeId: result.original_challenge_id,
+      title: result.title,
+      description: result.description,
+      startCode: result.starter_code,
+      language: result.language,
+      difficulty: result.difficulty,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+      testCases: result.test_cases.map(tc => ({
+        id: tc.id,
+        createdAt: tc.created_at,
+        updatedAt: tc.updated_at,
+        input: tc.input,
+        expectedOutput: tc.expected_output,
+        score: tc.score,
+        isHidden: tc.is_hidden,
+        assignmentChallengeId: tc.assignment_challenge_id,
+      }))
+    } : null;
   }
 
   async update(assignment: Assignment): Promise<Assignment> {
