@@ -41,7 +41,8 @@ export class CodingChallengePrismaRepository implements CodingChallengeRepositor
     const result = await this.prisma.codingChallenge.findUnique({
       where: { id: id },
       include:{
-        tag:true
+        tag: true,
+        test_cases: true
       }
     });
 

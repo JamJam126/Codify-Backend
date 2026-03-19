@@ -5,7 +5,7 @@ import { Role } from '../domain/role.enum';
 export class FakeClassroomMemberRepository
   implements ClassroomMemberRepository
 {
-  addMemberBulks(classroomId: number, members: ClassroomMember[]): Promise<ClassroomMember[]> {
+  addMemberBulks(classroomId: number, members: ClassroomMember[]): Promise<void> {
     throw new Error('Method not implemented.');
   }
   findMembersByUserIds(classroomId: number, userIds: number[]): Promise<ClassroomMember[]> {
@@ -52,24 +52,4 @@ export class FakeClassroomMemberRepository
 			...member
 		}) : null;
   }
-
-  async isOwner(
-		classroomId: number, 
-		userId: number
-  ): Promise<boolean> {
-    const member = (this.members.get(classroomId) ?? [])
-      .find(m => m.userId === userId);
-
-    return member?.role === Role.OWNER;
-  }
-
-  async isAdmin(
-		classroomId: number, 
-		userId: number
-	): Promise<boolean> {
-		const member = (this.members.get(classroomId) ?? [])
-		  .find(m => m.userId === userId);
-
-		return member?.role === Role.OWNER || member?.role === Role.TEACHER;
-	}
 }

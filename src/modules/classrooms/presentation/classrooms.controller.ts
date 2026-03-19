@@ -34,6 +34,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../../../modules/auth/dto/current-user.dto';
 import { ClassroomMembershipService } from '../application/classroom-membership.service';
 import { AddMembersDto } from './dto/add-members.dto';
+import { ClassroomMemberGuard } from 'src/common/guards/classroom-member.guard';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -59,6 +60,43 @@ export class ClassroomsController {
     @CurrentUser() user: CurrentUserDto,
   ) {
     return this.service.create(dto, user.id);
+  }
+
+    // =============== UPDATE =================
+  @UseGuards(ClassroomMemberGuard)
+  @Patch(':classroomId')
+  @ApiOperation({ summary: 'Update a classroom' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiBody({ type: UpdateClassroomDto })
+  @ApiOkResponse({
+    description: 'Classroom updated successfully',
+    type: ClassroomResponseDto,
+  })
+  update(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Body() dto: UpdateClassroomDto,
+    @CurrentUser() user: CurrentUserDto
+  ) {
+    return this.service.update(classroomId, dto, user.id);
+  }
+
+  // =============== DELETE =================
+  @UseGuards(ClassroomMemberGuard)
+  @Delete(':classroomId')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete a classroom' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiNoContentResponse({
+    description: 'Classroom deleted successfully',
+  })
+  @ApiForbiddenResponse({
+    description: 'Not allowed to delete this classroom',
+  })
+  async remove(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    await this.service.delete(classroomId, user.id);
   }
 
   // =============== FIND ALL =================
@@ -97,6 +135,7 @@ export class ClassroomsController {
   }
 
   // =============== FIND ONE =================
+  @UseGuards(ClassroomMemberGuard)
   @Get(':classroomId')
   @ApiOperation({ summary: 'Get classroom by ID' })
   @ApiParam({ name: 'classroomId', example: 1 })
@@ -114,42 +153,8 @@ export class ClassroomsController {
     return this.service.findOne(classroomId, user.id);
   }
 
-  // =============== UPDATE =================
-  @Patch(':classroomId')
-  @ApiOperation({ summary: 'Update a classroom' })
-  @ApiParam({ name: 'classroomId', example: 1 })
-  @ApiBody({ type: UpdateClassroomDto })
-  @ApiOkResponse({
-    description: 'Classroom updated successfully',
-    type: ClassroomResponseDto,
-  })
-  update(
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Body() dto: UpdateClassroomDto,
-    @CurrentUser() user: CurrentUserDto
-  ) {
-    return this.service.update(classroomId, dto, user.id);
-  }
-
-  // =============== DELETE =================
-  @Delete(':classroomId')
-  @HttpCode(204)
-  @ApiOperation({ summary: 'Delete a classroom' })
-  @ApiParam({ name: 'classroomId', example: 1 })
-  @ApiNoContentResponse({
-    description: 'Classroom deleted successfully',
-  })
-  @ApiForbiddenResponse({
-    description: 'Not allowed to delete this classroom',
-  })
-  async remove(
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    await this.service.delete(classroomId, user.id);
-  }
-
   // =============== MEMBERS =================
+  @UseGuards(ClassroomMemberGuard)
   @Post(':classroomId/members')
   @ApiOperation({ summary: 'Add member to classroom' })
   @ApiParam({ name: 'classroomId', example: 1 })
@@ -168,6 +173,7 @@ export class ClassroomsController {
     );
   }
 
+  @UseGuards(ClassroomMemberGuard)
   @Delete(':classroomId/members/:userId')
   @HttpCode(204)
   @ApiOperation({ summary: 'Remove member from classroom' })
@@ -183,6 +189,7 @@ export class ClassroomsController {
     await this.membershipService.removeMember(classroomId, user.id, userId);
   }
 
+  @UseGuards(ClassroomMemberGuard)
   @Patch(':classroomId/members/:userId/role')
   @ApiOperation({ summary: 'Change member role' })
   @ApiParam({ name: 'classroomId', example: 1 })
@@ -194,7 +201,6 @@ export class ClassroomsController {
       },
     },
   })
-    
   async changeMemberRole(
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @Param('userId', ParseIntPipe) userId: number,
@@ -209,6 +215,20 @@ export class ClassroomsController {
     )
   }
 
+  @UseGuards(ClassroomMemberGuard)
+  @Post(':classroomId/leave')
+  @ApiOperation({ summary: 'Leave the classroom' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @HttpCode(204)
+  @ApiNoContentResponse({ description: 'Member leaved successfully' })
+  async leaveClassroom(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.membershipService.leaveClassroom(classroomId, user.id);
+  }
+
+  @UseGuards(ClassroomMemberGuard)
   @Get(':classroomId/members')
   @ApiOperation({ summary: 'List classroom members' })
   @ApiOkResponse({ description: 'List of classroom members', type: [ClassroomMemberResponseDto] })
@@ -219,6 +239,7 @@ export class ClassroomsController {
     return this.membershipService.listMembers(classroomId, user.id);
   }
 
+  @UseGuards(ClassroomMemberGuard)
   @Get(':classroomId/members/:memberId')
   @ApiOperation({ summary: 'Get a specific classroom member' })
   @ApiParam({ name: 'classroomId', example: 1 })
@@ -239,17 +260,5 @@ export class ClassroomsController {
     @Param('memberId', ParseIntPipe) memberId: number,
   ) {
     return this.membershipService.getMember(classroomId, memberId, user.id);
-  }
-
-  @Post(':classroomId/leave')
-  @ApiOperation({ summary: 'Leave the classroom' })
-  @ApiParam({ name: 'classroomId', example: 1 })
-  @HttpCode(204)
-  @ApiNoContentResponse({ description: 'Member leaved successfully' })
-  async leaveClassroom(
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    return this.membershipService.leaveClassroom(classroomId, user.id);
   }
 }
