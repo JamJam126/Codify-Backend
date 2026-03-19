@@ -213,21 +213,21 @@ export class AssignmentController {
     return this.service.publish(id, classroomId, user.id);
   }
 
-  @Patch(':id/unpublish')
-  @ApiOperation({ summary: 'Unpublish an assignment' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiOkResponse({
-    description: 'Assignment unpublished successfully',
-    type: AssignmentResponseDto,
-  })
-  unpublish(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    return this.service.unPublish(id, classroomId, user.id);
-  }
+  // @Patch(':id/unpublish')
+  // @ApiOperation({ summary: 'Unpublish an assignment' })
+  // @ApiParam({ name: 'classroomId', example: 3 })
+  // @ApiParam({ name: 'id', example: 1 })
+  // @ApiOkResponse({
+  //   description: 'Assignment unpublished successfully',
+  //   type: AssignmentResponseDto,
+  // })
+  // unpublish(
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Param('classroomId', ParseIntPipe) classroomId: number,
+  //   @CurrentUser() user: CurrentUserDto,
+  // ) {
+  //   return this.service.unPublish(id, classroomId, user.id);
+  // }
 
   // =============== DELETE =================
   @Delete(':id')

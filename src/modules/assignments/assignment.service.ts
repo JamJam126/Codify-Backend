@@ -63,11 +63,11 @@ export class AssignmentService {
       throw new BadRequestException('Duplicate challenge IDs in request');
     }
 
-    if (assignment.isPublished) {
-      throw new BadRequestException(
-        'Cannot modify a published assignment',
-      );
-    }
+    // if (assignment.isPublished) {
+    //   throw new BadRequestException(
+    //     'Cannot modify a published assignment',
+    //   );
+    // }
 
     await this.repo.attachChallenges(assignmentId, challengeIds);
   }
@@ -92,11 +92,11 @@ export class AssignmentService {
       throw new NotFoundException('Assignment not found');
     }
 
-    if (assignment.isPublished) {
-      throw new BadRequestException(
-        'Cannot modify a published assignment',
-      );
-    }
+    // if (assignment.isPublished) {
+    //   throw new BadRequestException(
+    //     'Cannot modify a published assignment',
+    //   );
+    // }
 
     const updated = await this.repo.updateAssignmentChallenge(
       assignmentChallengeId,
@@ -132,9 +132,9 @@ export class AssignmentService {
       );
     }
 
-    if (assignment.isPublished) {
-      throw new BadRequestException('Cannot modify a published assignment');
-    }
+    // if (assignment.isPublished) {
+    //   throw new BadRequestException('Cannot modify a published assignment');
+    // }
 
     const removed = await this.repo.removeChallenge(assignmentId, challengeId);
     if (!removed) {
