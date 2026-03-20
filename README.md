@@ -230,6 +230,24 @@ cd ..
 docker compose up --build
 ```
 
+This will build images and start containers.
+Note: At this stage, your database tables exist, but they are empty.
+
+### 5. Seed the database
+
+Open another terminal while the containers are running and execute:
+
+```bash
+docker compose exec app npx prisma db seed
+```
+
+This seeds your database with initial data, including:
+    - Users: Owner, Teacher, Student
+    - Classrooms: CS101, JS201
+    - Coding challenges and assignments
+Important: Make sure the app container is running before executing this command.
+You only need to run this once unless you want to reset your database.
+
 Once running, the API is available at:
 
 ```
