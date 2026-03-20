@@ -56,11 +56,12 @@ cp .env.example .env
 Update variables as needed:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/eduai"
-JWT_SECRET="your-secret-key"
-REDIS_HOST="127.0.0.1"
-REDIS_PORT=6379
-PORT=3000
+DATABASE_URL="postgresql://user:password@localhost:5432/codify"
+JWT_SECRET=supersecretkey12345
+JWT_EXPIRES_IN=3600
+
+CODE_RUNNER_VOLUME_NAME=code-temp
+DB_VOLUME_NAME=codifydb
 ```
 
 Prisma **requires** `DATABASE_URL` to be defined.
@@ -242,11 +243,14 @@ docker compose exec app npx prisma db seed
 ```
 
 This seeds your database with initial data, including:
-    - Users: Owner, Teacher, Student
-    - Classrooms: CS101, JS201
-    - Coding challenges and assignments
+- Users: Owner, Teacher, Student
+- Classrooms: CS101, JS201
+- Coding challenges and assignments
+
 Important: Make sure the app container is running before executing this command.
 You only need to run this once unless you want to reset your database.
+
+Important: Making sure Running this command inside the project file 
 
 Once running, the API is available at:
 
