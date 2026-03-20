@@ -1,3 +1,7 @@
+Here is the updated README with the AutoEval‑C integration section added at the bottom.
+
+---
+
 # Codify - Backend
 
 This repository contains the full backend system for Codify.
@@ -380,3 +384,139 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for backend architecture and mo
 
 ---
 
+## 🤖 AI Evaluation with AutoEval‑C
+
+This system integrates [AutoEval‑C](https://github.com/NhaNhaa/Codify.works-Evaluation), an AI‑powered C code evaluation service built with FastAPI, ChromaDB, and constrained AI agents.
+
+### How it works
+
+1. **Teacher uploads assignment files** (`instructions.md`, `starter_code.c`, `teacher_correction_code.c`).
+2. **AutoEval‑C extracts/generates micro skills** (Phase 1).
+3. **Student submits code** – the request is enqueued via BullMQ.
+4. **Evaluation runs asynchronously** – the queue processor calls AutoEval‑C and stores the result.
+5. **Results are fetched** – PASS/FAIL feedback per skill with line references and recommended fixes.
+
+### Prerequisites for AutoEval‑C
+
+- **Python 3.10+** (the service runs in its own Docker container)
+- **Groq API key** (or other supported provider – see the [AutoEval‑C README](https://github.com/NhaNhaa/Codify.works-Evaluation))
+- **Docker** (already required)
+
+### Environment Variables
+
+Add the following to your `.env` file (used by docker-compose):
+
+```env
+# AutoEval‑C
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### Adding AutoEval‑C to Docker Compose
+
+The `docker-compose.yaml` already includes a `codify_evaluation` service. If you haven't added it yet, copy the service definition from the repository or use the snippet below:
+
+```yaml
+codify_evaluation:
+  build:
+    context: ../Codify.works-Evaluation    # adjust path to your Python project
+    dockerfile: docker/Dockerfile
+  container_name: codify_evaluation
+  ports:
+    - "8000:8000"                 # optional, for direct Swagger access
+  environment:
+    GROQ_API_KEY: ${GROQ_API_KEY}
+    LLM_PROVIDER: groq
+    AGENT1_MODEL: moonshotai/kimi-k2-instruct
+    AGENT2_MODEL: moonshotai/kimi-k2-instruct
+    AGENT3_MODEL: moonshotai/kimi-k2-instruct
+  volumes:
+    - ./data/inputs:/app/data/inputs
+    - ./data/outputs:/app/data/outputs
+    - ./data/chroma_storage:/app/data/chroma_storage
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 30s
+  restart: unless-stopped
+```
+
+Make sure the `context` points to the folder containing your AutoEval‑C code.
+
+### Evaluation Endpoints
+
+The NestJS backend exposes the following endpoints under `/evaluation`:
+
+| Method | Endpoint                              | Description                         |
+|--------|---------------------------------------|-------------------------------------|
+| POST   | `/evaluation/setup`                   | Upload assignment files (multipart) |
+| POST   | `/evaluation/extract-skills`          | Run Phase 1 (skill extraction)      |
+| POST   | `/evaluation/submit`                  | Submit student code (enqueues job)  |
+| GET    | `/evaluation/result/:studentId`       | Fetch evaluation result (JSON+MD)   |
+| DELETE | `/evaluation/result/:studentId`       | Delete output files                 |
+| DELETE | `/evaluation/assignment/:assignmentId`| Delete everything for an assignment |
+| GET    | `/evaluation/skills/:assignmentId`    | View stored micro skills            |
+
+All endpoints require a valid JWT token (use the `Authorization: Bearer <token>` header).
+
+### Testing the Evaluation Flow
+
+1. **Login to get a token**  
+   ```bash
+   curl -X POST http://localhost:3000/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"alice@school.com","password":"owner123"}'
+   ```
+   Save the returned `access_token`.
+
+2. **Upload assignment files**  
+   ```bash
+   curl -X POST http://localhost:3000/evaluation/setup \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -F "assignment_id=lab_01" \
+     -F "instructions=@../Codify.works/Upload/instructions.md" \
+     -F "starter_code=@../Codify.works/Upload/starter_code.c" \
+     -F "teacher_code=@../Codify.works/Upload/teacher_correction_code.c"
+   ```
+
+3. **Extract skills**  
+   ```bash
+   curl -X POST http://localhost:3000/evaluation/extract-skills \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"assignment_id": "lab_01", "force_regenerate": true}'
+   ```
+
+4. **Submit a student**  
+   ```bash
+   curl -X POST http://localhost:3000/evaluation/submit \
+     -H "Authorization: Bearer YOUR_TOKEN" \
+     -F "assignment_id=lab_01" \
+     -F "student_id=student_01" \
+     -F "student_code=@../Codify.works/Upload/student_01.c"
+   ```
+   Returns a `jobId`.
+
+5. **Poll for the result**  
+   ```bash
+   curl http://localhost:3000/evaluation/result/student_01?assignmentId=lab_01 \
+     -H "Authorization: Bearer YOUR_TOKEN"
+   ```
+
+   When the job completes, you'll receive the full evaluation report (JSON + Markdown).
+
+### AutoEval‑C Direct Access (Optional)
+
+To view the AutoEval‑C Swagger UI directly, open [http://localhost:8000/docs](http://localhost:8000/docs). This is useful for debugging but not required for normal operation.
+
+### Troubleshooting
+
+- **Missing API key**: Ensure `GROQ_API_KEY` is set in your `.env` file and passed to the `codify_evaluation` container.
+- **Evaluation job never finishes**: Check the logs of the `codify_evaluation` container (`docker logs codify_evaluation`) and the NestJS app.
+- **Health check fails**: Make sure `curl` is installed in the Python Docker image (the provided Dockerfile includes it).
+- **Port conflicts**: If port 8000 is already in use, change the `ports` mapping or remove it (the internal communication via `http://codify_evaluation:8000` still works without host port mapping).
+
+---
+
+Now the README includes full instructions for setting up and using the AI evaluation module.

@@ -1,0 +1,54 @@
+{
+  "student_id": "student_01",
+  "assignment_id": "lab_01",
+  "skills": [
+    {
+      "skill": "Be able to shift elements, using arr[i-1] and handle the 1st cell",
+      "rank": 1,
+      "weight": 4,
+      "status": "PASS",
+      "line_start": 10,
+      "line_end": 12,
+      "student_snippet": "for(i = 1; i < 5; i++) {\narr[i - 1] = arr[i];\n}",
+      "recommended_fix": "",
+      "feedback": "You correctly used the left-shift copy pattern inside the loop, and starting at i = 1 keeps arr[i - 1] within bounds. That demonstrates the required shift step for this skill.",
+      "verified": true
+    },
+    {
+      "skill": "Avoid losing data during shifting, using a temporary variable",
+      "rank": 2,
+      "weight": 3,
+      "status": "FAIL",
+      "line_start": 10,
+      "line_end": 13,
+      "student_snippet": "for(i = 1; i < 5; i++) {\narr[i - 1] = arr[i];\n}\narr[4] = arr[0];",
+      "recommended_fix": "temp = arr[0];\n    for (int i = 0; i < 4; i++) {\n        arr[i] = arr[i + 1];\n    }\n    arr[4] = temp;",
+      "feedback": "Your loop overwrites the original arr[0] before it is saved, so the value that should move to the last position is lost. A temporary variable is needed to preserve that original first element before shifting.",
+      "verified": true
+    },
+    {
+      "skill": "Be able to access array elements using index (arr[i])",
+      "rank": 3,
+      "weight": 2,
+      "status": "PASS",
+      "line_start": 7,
+      "line_end": 7,
+      "student_snippet": "scanf(\"%d\", &arr[i]);",
+      "recommended_fix": "",
+      "feedback": "You correctly used array index notation to access the intended array element for this operation. That demonstrates the required arr[i] access pattern for this skill.",
+      "verified": true
+    },
+    {
+      "skill": "Use scanf to read 5 integers into an array",
+      "rank": 4,
+      "weight": 1,
+      "status": "PASS",
+      "line_start": 6,
+      "line_end": 8,
+      "student_snippet": "for(i = 0; i < 5; i++) {\nscanf(\"%d\", &arr[i]);\n}",
+      "recommended_fix": "",
+      "feedback": "You correctly used scanf with &arr[i] inside the loop so each input is stored directly in the correct array cell. Running the loop five times matches the requirement to read five integers.",
+      "verified": true
+    }
+  ]
+}

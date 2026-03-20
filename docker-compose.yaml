@@ -10,6 +10,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      codify_evaluation:
+        condition: service_healthy
     environment:
       PORT: 3000
       REDIS_HOST: redis
@@ -17,6 +19,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/codify
+      AUTOEVAL_BASE_URL: http://codify_evaluation:8000
     volumes:
       - code-temp:/code-temp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -53,12 +56,43 @@ services:
       retries: 5
       start_period: 5s
     restart: unless-stopped
+
   sandbox:
     build: ./code-runner
     image: code-runner-c
     volumes:
       - code-temp:/code-temp
     command: ["sleep", "infinity"]
+    restart: unless-stopped
+
+  codify_evaluation:
+    build:
+      context: ../Codify.works
+      dockerfile: docker/Dockerfile
+    container_name: codify_evaluation
+    ports:
+      - "8000:8000"                     # added port mapping
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      LLM_PROVIDER: groq
+      AGENT1_MODEL: moonshotai/kimi-k2-instruct
+      AGENT2_MODEL: moonshotai/kimi-k2-instruct
+      AGENT3_MODEL: moonshotai/kimi-k2-instruct
+      LLM_TEMPERATURE: 0.1
+      LLM_MAX_TOKENS: 4096
+      LLM_RESPONSE_FORMAT: json_object
+    volumes:
+      - ./data/inputs:/app/data/inputs
+      - ./data/outputs:/app/data/outputs
+      - ./data/chroma_storage:/app/data/chroma_storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
 volumes:
   code-temp:
     name: ${CODE_RUNNER_VOLUME_NAME}

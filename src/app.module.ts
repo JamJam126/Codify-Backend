@@ -9,6 +9,8 @@ import { ClassroomsModule } from './modules/classrooms/classrooms.module';
 import { AssignmentModule } from './modules/assignments/assignment.module';
 import { CodingChallengModule } from './modules/coding-challenges/coding-challenge.module';
 import { SubmissionModule } from './modules/submissions/submission.module';
+import { EvaluationModule } from './modules/evaluation/evaluation.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -18,7 +20,9 @@ import { SubmissionModule } from './modules/submissions/submission.module';
     AssignmentModule,
     CodingChallengModule,
     SubmissionModule,
-    QueueModule, CodeRunnerModule
+    QueueModule,
+    CodeRunnerModule,
+    EvaluationModule,
   ],
   providers: [PrismaService],
 })

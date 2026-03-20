@@ -228,3 +228,12 @@ model TestCaseResult {
   submission Submission @relation(fields: [submission_id], references: [id], onDelete: Cascade)
   testCase   TestCase   @relation(fields: [case_id], references: [id], onDelete: Cascade)
 }
+
+model EvaluationResult {
+  id              String   @id @default(cuid())
+  studentId       String
+  assignmentId    String
+  jsonReport      Json
+  markdownReport  String
+  evaluatedAt     DateTime @default(now())
+}

@@ -8,10 +8,12 @@ async function main() {
   const hashedStudent = await bcrypt.hash("student123", 10);
 
   /*
-  USERS
+  USERS – idempotent upsert
   */
-  const owner = await prisma.user.create({
-    data: {
+  const owner = await prisma.user.upsert({
+    where: { email: "alice@school.com" },
+    update: {},
+    create: {
       name: "Alice Owner",
       email: "alice@school.com",
       hashed_password: hashedOwner,
@@ -24,8 +26,10 @@ async function main() {
     },
   });
 
-  const teacher = await prisma.user.create({
-    data: {
+  const teacher = await prisma.user.upsert({
+    where: { email: "bob@school.com" },
+    update: {},
+    create: {
       name: "Bob Teacher",
       email: "bob@school.com",
       hashed_password: hashedTeacher,
@@ -38,8 +42,10 @@ async function main() {
     },
   });
 
-  const student = await prisma.user.create({
-    data: {
+  const student = await prisma.user.upsert({
+    where: { email: "charlie@school.com" },
+    update: {},
+    create: {
       name: "Charlie Student",
       email: "charlie@school.com",
       hashed_password: hashedStudent,
@@ -60,15 +66,17 @@ async function main() {
     update: {},
     create: {
       name: "Basics",
-      user_id:1
+      user_id: owner.id,
     },
   });
 
   /*
-  CLASSROOMS
+  CLASSROOMS – upsert by class_code
   */
-  const cs101 = await prisma.classroom.create({
-    data: {
+  const cs101 = await prisma.classroom.upsert({
+    where: { class_code: "CS101" },
+    update: {},
+    create: {
       class_code: "CS101",
       name: "Intro to Programming",
       description: "Programming basics for beginners.",
@@ -81,8 +89,10 @@ async function main() {
     },
   });
 
-  const js201 = await prisma.classroom.create({
-    data: {
+  const js201 = await prisma.classroom.upsert({
+    where: { class_code: "JS201" },
+    update: {},
+    create: {
       class_code: "JS201",
       name: "JavaScript Fundamentals",
       description: "Core JavaScript concepts.",
@@ -96,35 +106,55 @@ async function main() {
   });
 
   /*
-  CLASSROOM USERS
+  CLASSROOM USERS – upsert using the compound unique index
   */
-  await prisma.classroomUser.createMany({
-    data: [
-      { user_id: owner.id, classroom_id: cs101.id, role: ClassroomRole.OWNER },
-      { user_id: teacher.id, classroom_id: cs101.id, role: ClassroomRole.TEACHER },
-      { user_id: student.id, classroom_id: cs101.id, role: ClassroomRole.STUDENT },
+  const classroomUserPairs = [
+    { user_id: owner.id, classroom_id: cs101.id, role: ClassroomRole.OWNER },
+    { user_id: teacher.id, classroom_id: cs101.id, role: ClassroomRole.TEACHER },
+    { user_id: student.id, classroom_id: cs101.id, role: ClassroomRole.STUDENT },
+    { user_id: teacher.id, classroom_id: js201.id, role: ClassroomRole.OWNER },
+    { user_id: student.id, classroom_id: js201.id, role: ClassroomRole.STUDENT },
+  ];
 
-      { user_id: teacher.id, classroom_id: js201.id, role: ClassroomRole.OWNER },
-      { user_id: student.id, classroom_id: js201.id, role: ClassroomRole.STUDENT },
-    ],
-  });
+  for (const pair of classroomUserPairs) {
+    await prisma.classroomUser.upsert({
+      where: {
+        user_id_classroom_id: {
+          user_id: pair.user_id,
+          classroom_id: pair.classroom_id,
+        },
+      },
+      update: { role: pair.role },
+      create: pair,
+    });
+  }
 
   /*
-  CODING CHALLENGE TEMPLATE
+  CODING CHALLENGE – avoid duplicate by title + user
   */
-  const challenge = await prisma.codingChallenge.create({
-    data: {
-      user_id: teacher.id,
-      tag_id: tag.id,
+  let challenge = await prisma.codingChallenge.findFirst({
+    where: {
       title: "Return 42",
-      language: "javascript",
-      description: "Return the number 42",
-      starter_code: `function solve() {
-  // return the number 42
-}`,
+      user_id: teacher.id,
     },
   });
+  if (!challenge) {
+    challenge = await prisma.codingChallenge.create({
+      data: {
+        user_id: teacher.id,
+        tag_id: tag.id,
+        title: "Return 42",
+        language: "javascript",
+        description: "Return the number 42",
+        starter_code: `function solve() {\n  // return the number 42\n}`,
+      },
+    });
+  }
 
+  // Ensure test cases exist for the challenge (delete old ones to avoid duplicates)
+  await prisma.testCase.deleteMany({
+    where: { challenge_id: challenge.id },
+  });
   await prisma.testCase.createMany({
     data: [
       {
@@ -145,59 +175,58 @@ async function main() {
   });
 
   /*
-  SECTIONS
+  ASSIGNMENT – find or create
   */
-  // const week1 = await prisma.section.create({
-  //   data: {
-  //     classroom_id: cs101.id,
-  //     title: "Week 1",
-  //     position: 1,
-  //   },
-  // });
-
-  // const week2 = await prisma.section.create({
-  //   data: {
-  //     classroom_id: cs101.id,
-  //     title: "Week 2",
-  //     position: 2,
-  //   },
-  // });
-
-  /*
-  ASSIGNMENT
-  */
-  const assignment = await prisma.assignment.create({
-    data: {
+  let assignment = await prisma.assignment.findFirst({
+    where: {
       classroom_id: cs101.id,
       title: "First Coding Assignment",
-      description: "Solve your first coding challenge.",
-      due_at: new Date("2030-01-20T23:59:59Z"),
-      is_published: true,
     },
   });
+  if (!assignment) {
+    assignment = await prisma.assignment.create({
+      data: {
+        classroom_id: cs101.id,
+        title: "First Coding Assignment",
+        description: "Solve your first coding challenge.",
+        due_at: new Date("2030-01-20T23:59:59Z"),
+        is_published: true,
+      },
+    });
+  }
 
   /*
-  ASSIGNMENT CHALLENGE (copy from template)
+  ASSIGNMENT CHALLENGE – find or create
   */
-  const assignmentChallenge = await prisma.assignmentChallenge.create({
-    data: {
+  let assignmentChallenge = await prisma.assignmentChallenge.findFirst({
+    where: {
       assignment_id: assignment.id,
       original_challenge_id: challenge.id,
-      title: challenge.title,
-      description: challenge.description,
-      starter_code: challenge.starter_code,
-      language: challenge.language,
-      difficulty: challenge.difficulty
     },
   });
+  if (!assignmentChallenge) {
+    assignmentChallenge = await prisma.assignmentChallenge.create({
+      data: {
+        assignment_id: assignment.id,
+        original_challenge_id: challenge.id,
+        title: challenge.title,
+        description: challenge.description,
+        starter_code: challenge.starter_code,
+        language: challenge.language,
+        difficulty: challenge.difficulty,
+      },
+    });
+  }
 
   /*
-  COPY TEST CASES
+  COPY TEST CASES – delete existing and recreate
   */
+  await prisma.assignmentTestCase.deleteMany({
+    where: { assignment_challenge_id: assignmentChallenge.id },
+  });
   const originalCases = await prisma.testCase.findMany({
     where: { challenge_id: challenge.id },
   });
-
   await prisma.assignmentTestCase.createMany({
     data: originalCases.map((c) => ({
       assignment_challenge_id: assignmentChallenge.id,
