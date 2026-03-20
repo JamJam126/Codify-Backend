@@ -1,12 +1,12 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { UpdateSubmissionDto } from "./dto/update-submission.dto";
-import { ClassroomMembershipService } from "../classrooms/application/classroom-membership.service";
-import { Role } from "../classrooms/domain/role.enum";
-import { Submission } from "./submission.entity";
-import { SubmissionStatus } from "./submissionStatus.enum";
-import type { SubmissionRepository } from "./repositories/submission.repository";
-import { CodeSubmission } from "./challengeSubmission.entity";
-import { CodingChallengeService } from "../coding-challenges/application/coding-chellenge.service";
+import { UpdateSubmissionDto } from "../presentation/dto/update-submission.dto";
+import { ClassroomMembershipService } from "../../classrooms/application/classroom-membership.service";
+import { Role } from "../../classrooms/domain/role.enum";
+import { Submission } from "../domain/submission.entity";
+import { SubmissionStatus } from "../domain/submissionStatus.enum";
+import type { SubmissionRepository } from "../infrastructure/submission.repository";
+import { CodeSubmission } from "../domain/challengeSubmission.entity";
+import { CodingChallengeService } from "../../coding-challenges/application/coding-chellenge.service";
 
 @Injectable() 
 export class SubmissionService {

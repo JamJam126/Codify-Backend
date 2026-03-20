@@ -20,12 +20,12 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-import { SubmissionService } from './submission.service';
+import { SubmissionService } from '../application/submission.service';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { CurrentUserDto } from '../auth/dto/current-user.dto';
-import { UpdateSubmissionDto } from './dto/update-submission.dto';
+import { CurrentUserDto } from '../../auth/dto/current-user.dto';
+import { UpdateSubmissionDto } from '../presentation/dto/update-submission.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { SubmissionResponseDto } from './dto/submission-response.dto';
+import { SubmissionResponseDto } from '../presentation/dto/submission-response.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -126,6 +126,25 @@ export class SubmissionController {
   })
   @ApiNotFoundResponse({ description: 'Submission not found' })
   getSubmission(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.getSubmission(classroomId, assignmentId, submissionId, user.id);
+  }
+
+  @Get(':submissionId/feedback')
+  @ApiOperation({ summary: 'Get a specific submission' })
+  @ApiParam({ name: 'classroomId', example: 1 })
+  @ApiParam({ name: 'assignmentId', example: 1 })
+  @ApiParam({ name: 'submissionId', example: 1 })
+  @ApiOkResponse({
+    description: 'FoundBack found',
+    type: SubmissionResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'feedback not found' })
+  getFeedback(
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @Param('assignmentId', ParseIntPipe) assignmentId: number,
     @Param('submissionId', ParseIntPipe) submissionId: number,

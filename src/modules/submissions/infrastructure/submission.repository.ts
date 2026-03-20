@@ -1,4 +1,4 @@
-import { Submission } from "../submission.entity";
+import { Submission } from "../domain/submission.entity";
 
 export interface SubmissionRepository {
   create(submission: Submission): Promise<Submission>;
