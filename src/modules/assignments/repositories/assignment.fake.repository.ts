@@ -5,7 +5,7 @@ import { AssignmentChallenge } from '@prisma/client';
 import { UpdateAssignmentChallengeDto } from '../dto/update-assignment-challenge.dto';
 
 export class FakeAssignmentRepository implements AssignmentRepository {
-  findOneWithChallenges(id: number, classroomId: number, userId: number) {
+  findOneWithChallenges(id: number) {
     throw new Error('Method not implemented.');
   }
   findAssignmentChallengeDetail(assignmentId: number, challengeId: number) {

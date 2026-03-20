@@ -20,16 +20,13 @@ export class AssignmentService {
     private readonly codingChallengeService: CodingChallengeService
   ) {}
 
+  // REFACTORED
   async create(
     classroomId: number,
     userId: number,
     dto: CreateAssignmentDto
   ): Promise<Assignment> {
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER]
-    );
+    await this.ensureTeacherOrOwner(classroomId, userId);
 
     const assignment = Assignment.create({
       classroomId: classroomId,
@@ -41,35 +38,43 @@ export class AssignmentService {
     return this.repo.create(assignment);
   }
 
-  async attachChallenges(
+  // REFACTORED
+  async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
+    await this.membershipService.assertIsMember(classroomId, userId);
+    return this.getAssignmentOrFail(id, classroomId);
+  }
+
+  // NOTHING CHANGED
+  async findAllByClassroomId(classroomId: number, userId: number): Promise<Assignment[]> {
+    await this.membershipService.assertIsMember(classroomId, userId);
+    return this.repo.findAllByClassroom(classroomId,userId);
+  }
+
+  // REFACTORED
+  async findAssignmentDetail(id: number, classroomId: number, userId: number):
+    Promise<AssignmentDetailDto>
+  {
+    const assignment = await this.repo.findOneWithChallenges(id);
+    return assignment
+  }
+
+  async update(
+    id: number,
     classroomId: number,
-    assignmentId: number,
     userId: number,
-    challengeIds: number[],
-  ): Promise<void> {
+    dto: UpdateAssignmentDto
+  ): Promise<AssignmentDetailDto> {
+    await this.ensureTeacherOrOwner(classroomId, userId);
 
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER],
-    );
+    const assignment = await this.findOne(id, classroomId, userId);
+    assignment.update(dto);
 
-    const assignment = await this.repo.findById(assignmentId);
-    if (!assignment || assignment.classroomId !== classroomId) {
-      throw new NotFoundException('Assignment not found');
-    }
-
-    if (new Set(challengeIds).size !== challengeIds.length) {
-      throw new BadRequestException('Duplicate challenge IDs in request');
-    }
-
-    // if (assignment.isPublished) {
-    //   throw new BadRequestException(
-    //     'Cannot modify a published assignment',
-    //   );
-    // }
-
-    await this.repo.attachChallenges(assignmentId, challengeIds);
+    const updated = await this.repo.update(assignment);
+    const codingChallenges = await this.codingChallengeService.getAllChallengeByAssignment(id);
+    return {
+      ...updated,
+      codingChallenges
+    }    
   }
 
   async updateAssignmentChallenge(
@@ -79,24 +84,8 @@ export class AssignmentService {
     userId: number,
     dto: UpdateAssignmentChallengeDto,
   ) {
-
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER],
-    );
-
-    const assignment = await this.repo.findById(assignmentId);
-
-    if (!assignment || assignment.classroomId !== classroomId) {
-      throw new NotFoundException('Assignment not found');
-    }
-
-    // if (assignment.isPublished) {
-    //   throw new BadRequestException(
-    //     'Cannot modify a published assignment',
-    //   );
-    // }
+    await this.ensureTeacherOrOwner(classroomId, userId);
+    await this.getAssignmentOrFail(assignmentId, classroomId);
 
     const updated = await this.repo.updateAssignmentChallenge(
       assignmentChallengeId,
@@ -112,104 +101,12 @@ export class AssignmentService {
     return updated;
   }
 
-  async removeChallenge(
-    classroomId: number,
-    assignmentId: number,
-    challengeId: number,
-    userId: number,
-  ): Promise<void> {
-
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER]
-    );
-
-    const assignment = await this.repo.findById(assignmentId);
-    if (!assignment) {
-      throw new NotFoundException(
-        'Assignment not found'
-      );
-    }
-
-    // if (assignment.isPublished) {
-    //   throw new BadRequestException('Cannot modify a published assignment');
-    // }
-
-    const removed = await this.repo.removeChallenge(assignmentId, challengeId);
-    if (!removed) {
-      throw new NotFoundException('Challenge is not attached to this assignment');
-    }
-  }
-
-  async findOne(id: number, classroomId: number, userId: number): Promise<Assignment> {
-    await this.membershipService.assertIsMember(classroomId, userId);
-    
-    const assignment = await this.repo.findById(id);
-
-    if (!assignment || assignment.classroomId !== classroomId) {
-      throw new NotFoundException(`Assignment ${id} not found`);
-    }
-    
-    return assignment;
-  }
-
-  async findAssignmentDetail(id: number, classroomId: number, userId: number):
-    Promise<AssignmentDetailDto>
-  {
-    const assignment = await this.repo.findOneWithChallenges(id, classroomId, userId);
-    
-    return assignment
-  }
-
-  async getChallengeDetail(
-    classroomId: number,
-    assignmentId: number,
-    challengeId: number,
-    userId: number
-  ) {
-    const challenge = await this.repo.findAssignmentChallengeDetail(assignmentId, challengeId);
-    return challenge;
-  }
-
-  async findAllByClassroomId(classroomId: number, userId: number): Promise<Assignment[]> {
-    await this.membershipService.assertIsMember(classroomId, userId);
-    return this.repo.findAllByClassroom(classroomId,userId);
-  }
-
-  async update(
-    id: number,
-    classroomId: number,
-    userId: number,
-    dto: UpdateAssignmentDto
-  ): Promise<AssignmentDetailDto> {
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER]
-    );
-
-    const assignment = await this.findOne(id, classroomId, userId);
-    assignment.update(dto);
-
-    const updated = await this.repo.update(assignment);
-    const codingChallenges = await this.codingChallengeService.getAllChallengeByAssignment(id);
-    return {
-      ...updated,
-      codingChallenges
-    }    
-  }
-
   async publish(
     id: number,
     classroomId: number, 
     userId: number
   ): Promise<AssignmentDetailDto> {
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER]
-    );
+    await this.ensureTeacherOrOwner(classroomId, userId);
 
     const assignment = await this.findOne(id, classroomId, userId);
     assignment.publish();
@@ -222,41 +119,76 @@ export class AssignmentService {
     }
   }
 
-  async unPublish(
-    id: number,
+  // REFACTORED
+  async attachChallenges(
     classroomId: number,
+    assignmentId: number,
     userId: number,
-  ): Promise<AssignmentDetailDto> {
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER]
-    );
+    challengeIds: number[],
+  ): Promise<void> {
+    await this.ensureTeacherOrOwner(classroomId, userId);
+    await this.getAssignmentOrFail(assignmentId, classroomId);
 
-    const assignment = await this.findOne(id, classroomId, userId);
-    assignment.unPublish();
+    if (new Set(challengeIds).size !== challengeIds.length) {
+      throw new BadRequestException('Duplicate challenge IDs in request');
+    }
 
+    await this.repo.attachChallenges(assignmentId, challengeIds);
+  }
 
-    const unPublishedAssignment = await this.repo.update(assignment);
-    const codingChallenges = await this.codingChallengeService.getAllChallengeByAssignment(id);
-    return {
-      ...unPublishedAssignment,
-      codingChallenges
+  // REFACTORED
+  async removeChallenge(
+    classroomId: number,
+    assignmentId: number,
+    challengeId: number,
+    userId: number,
+  ): Promise<void> {
+    await this.ensureTeacherOrOwner(classroomId, userId);
+    await this.getAssignmentOrFail(assignmentId, classroomId);
+
+    const removed = await this.repo.removeChallenge(assignmentId, challengeId);
+    if (!removed) {
+      throw new NotFoundException('Challenge is not attached to this assignment');
     }
   }
+
+  // REFACTORED
+  async getChallengeDetail(
+    classroomId: number,
+    assignmentId: number,
+    challengeId: number,
+    userId: number
+  ) {
+    await this.membershipService.assertIsMember(classroomId, userId);
+
+    const challenge = await this.repo.findAssignmentChallengeDetail(assignmentId, challengeId);
+    if (!challenge) {
+      throw new NotFoundException('Challenge not found in assignment');
+    }
+    
+    return challenge;
+  }
   
+  // REFACTORED
   async delete(
     id: number,
     classroomId: number, 
     userId: number
   ): Promise<void> {
-    await this.membershipService.ensureRole(
-      classroomId,
-      userId,
-      [Role.OWNER, Role.TEACHER]
-    );
-
-    const assignment = await this.findOne(id, classroomId, userId);
+    await this.ensureTeacherOrOwner(classroomId, userId);
     await this.repo.deleteById(id);
+  }
+
+  // ========== HELPERS ==========
+  private async ensureTeacherOrOwner(classroomId: number, userId: number) {
+    await this.membershipService.ensureRole(classroomId, userId, [Role.OWNER, Role.TEACHER]);
+  }
+
+  private async getAssignmentOrFail(assignmentId: number, classroomId: number): Promise<Assignment> {
+    const assignment = await this.repo.findById(assignmentId);
+    if (!assignment || assignment.classroomId !== classroomId) {
+      throw new NotFoundException('Assignment not found');
+    }
+    return assignment;
   }
 }

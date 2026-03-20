@@ -57,45 +57,59 @@ export class AssignmentController {
     return this.service.create(classroomId, user.id, dto);
   }
 
-  @Get(':id/challenges/:challengeId')
-  @ApiOperation({ summary: 'Get assignment challenge detail' })
-  @ApiParam({ name: 'classroomId', example: 3, description: 'Classroom ID' })
-  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
-  @ApiParam({ name: 'challengeId', example: 5, description: 'Challenge ID' })
-  getChallengeDetail(
+  // =============== FIND BY CLASSROOM =================
+  @Get()
+  @ApiOperation({ summary: 'Get all assignments by classroom ID' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiOkResponse({
+    description: 'List of assignments in the classroom',
+    type: [AssignmentResponseDto],
+  })
+  findByClassroom(
     @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Param('id', ParseIntPipe) assignmentId: number,
-    @Param('challengeId', ParseIntPipe) challengeId: number,
-    @CurrentUser() user: CurrentUserDto,
+    @CurrentUser() user: CurrentUserDto
   ) {
-    return this.service.getChallengeDetail(
-      classroomId,
-      assignmentId,
-      challengeId,
-      user.id,
-    );
+    return this.service.findAllByClassroomId(classroomId, user.id);
   }
 
-  @Post(':id/challenges')
-  @ApiOperation({ summary: 'Attach coding challenges to assignment' })
+  // =============== FIND ONE =================
+  @Get(':id')
+  @ApiOperation({ summary: 'Get an assignment by ID' })
   @ApiParam({ name: 'classroomId', example: 3 })
   @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: AttachChallengesDto })
-  @ApiOkResponse({ description: 'Challenges attached successfully' })
-  attachChallenges(
+  @ApiOkResponse({
+    description: 'Assignment found',
+    type: AssignmentResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Assignment not found' })
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
     @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Param('id', ParseIntPipe) assignmentId: number,
-    @Body() dto: AttachChallengesDto,
     @CurrentUser() user: CurrentUserDto,
   ) {
-    return this.service.attachChallenges(
-      classroomId,
-      assignmentId,
-      user.id,
-      dto.challengeIds,
-    );
+    return this.service.findAssignmentDetail(id, classroomId, user.id);
   }
 
+  // =============== UPDATE =================
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update an assignment' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({ type: UpdateAssignmentDto })
+  @ApiOkResponse({
+    description: 'Assignment updated successfully',
+    type: AssignmentResponseDto,
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
+    @Body() dto: UpdateAssignmentDto,
+  ) {
+    return this.service.update(id, classroomId, user.id, dto);
+  }
+
+  // =============== UPDATE CHALLENGE SNAPSHOT ===============
   @Patch(':id/challenges/:assignmentChallengeId')
   @ApiOperation({ summary: 'Update assignment challenge snapshot' })
   @ApiParam({ name: 'classroomId', example: 3 })
@@ -121,6 +135,28 @@ export class AssignmentController {
     );
   }
 
+  // =============== ATTACH CHALLENGES ===============
+  @Post(':id/challenges')
+  @ApiOperation({ summary: 'Attach coding challenges to assignment' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({ type: AttachChallengesDto })
+  @ApiOkResponse({ description: 'Challenges attached successfully' })
+  attachChallenges(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Body() dto: AttachChallengesDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.attachChallenges(
+      classroomId,
+      assignmentId,
+      user.id,
+      dto.challengeIds,
+    );
+  }
+
+  // =============== REMOVE CHALLENGE ===============
   @Delete(':id/challenges/:challengeId')
   @ApiOperation({ summary: 'Remove a coding challenge from an assignment' })
   @ApiParam({ name: 'classroomId', example: 3, description: 'Classroom ID' })
@@ -144,56 +180,41 @@ export class AssignmentController {
     );
   }
 
-  // =============== FIND ONE =================
-  @Get(':id')
-  @ApiOperation({ summary: 'Get an assignment by ID' })
+  // =============== GET CHALLENGE DETAILS ===============
+  @Get(':id/challenges/:challengeId')
+  @ApiOperation({ summary: 'Get assignment challenge detail' })
+  @ApiParam({ name: 'classroomId', example: 3, description: 'Classroom ID' })
+  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
+  @ApiParam({ name: 'challengeId', example: 5, description: 'Challenge ID' })
+  getChallengeDetail(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Param('challengeId', ParseIntPipe) challengeId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.getChallengeDetail(
+      classroomId,
+      assignmentId,
+      challengeId,
+      user.id,
+    );
+  }
+
+
+  // =============== DELETE =================
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete an assignment' })
   @ApiParam({ name: 'classroomId', example: 3 })
   @ApiParam({ name: 'id', example: 1 })
-  @ApiOkResponse({
-    description: 'Assignment found',
-    type: AssignmentResponseDto,
-  })
+  @ApiNoContentResponse({ description: 'Assignment deleted successfully' })
   @ApiNotFoundResponse({ description: 'Assignment not found' })
-  findOne(
+  delete(
     @Param('id', ParseIntPipe) id: number,
     @Param('classroomId', ParseIntPipe) classroomId: number,
     @CurrentUser() user: CurrentUserDto,
   ) {
-    return this.service.findAssignmentDetail(id, classroomId, user.id);
-  }
-
-  // =============== FIND BY CLASSROOM =================
-  @Get()
-  @ApiOperation({ summary: 'Get all assignments by classroom ID' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiOkResponse({
-    description: 'List of assignments in the classroom',
-    type: [AssignmentResponseDto],
-  })
-  findByClassroom(
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto
-  ) {
-    return this.service.findAllByClassroomId(classroomId, user.id);
-  }
-
-  // =============== UPDATE =================
-  @Patch(':id')
-  @ApiOperation({ summary: 'Update an assignment' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: UpdateAssignmentDto })
-  @ApiOkResponse({
-    description: 'Assignment updated successfully',
-    type: AssignmentResponseDto,
-  })
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-    @Body() dto: UpdateAssignmentDto,
-  ) {
-    return this.service.update(id, classroomId, user.id, dto);
+    return this.service.delete(id, classroomId, user.id);
   }
 
   // =============== PUBLISH =================
@@ -228,20 +249,4 @@ export class AssignmentController {
   // ) {
   //   return this.service.unPublish(id, classroomId, user.id);
   // }
-
-  // =============== DELETE =================
-  @Delete(':id')
-  @HttpCode(204)
-  @ApiOperation({ summary: 'Delete an assignment' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiNoContentResponse({ description: 'Assignment deleted successfully' })
-  @ApiNotFoundResponse({ description: 'Assignment not found' })
-  delete(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    return this.service.delete(id, classroomId, user.id);
-  }
 }
