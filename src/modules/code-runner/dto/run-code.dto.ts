@@ -48,4 +48,13 @@ int main() {
 }`
     })
     code: string;
+
+    @ApiProperty({
+        description: `Represents the standard input (stdin) that will be passed to the program during execution. 
+Use this field to simulate user input when the code requires input (e.g., scanf, cin, input()). 
+Each line will be provided to the program as if entered by the user.`,
+        example: `5
+10 20 30 40 50`
+    })
+    input?: string;
 }

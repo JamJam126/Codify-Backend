@@ -1,9 +1,9 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import type { TestCaseRepository } from "./repositories/test-case.repository";
+import type { TestCaseRepository } from "../domain/test-case.repository";
 import { CodingChallengeService } from "./coding-chellenge.service";
-import { CreateTestCaseDto } from "./dto/create-test-case.dto";
-import { TestCase } from "./test-case.entity";
-import { UpdateTestCaseDto } from "./dto/update-test-case.dto";
+import { CreateTestCaseDto } from "../presentation/dto/create-test-case.dto";
+import { TestCase } from "../domain/test-case.entity";
+import { UpdateTestCaseDto } from "../presentation/dto/update-test-case.dto";
 
 @Injectable()
 export class TestCaseService {
@@ -26,9 +26,9 @@ export class TestCaseService {
       testCase = TestCase.create({
         challengeId: challengeId,
         input: dto.input,
-        expectedOutput: dto.expected_output,
+        expectedOutput: dto.expectedOutput,
         score: dto.score,
-        isHidden: dto.is_hidden,
+        isHidden: dto.isHidden,
       });
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -58,9 +58,9 @@ export class TestCaseService {
 
     const updatedTestCase = await this.repo.update(id, {
       input: dto.input,
-      expectedOutput: dto.expected_output,
+      expectedOutput: dto.expectedOutput,
       score: dto.score,
-      isHidden: dto.is_hidden,
+      isHidden: dto.isHidden,
     });
 
     return updatedTestCase;

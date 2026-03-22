@@ -3,10 +3,11 @@ import { QueueModule } from '../queue/queue.module';
 import { CodeRunnerService } from './code-runner.service';
 import { CodeRunnerController } from './code-runner.controller';
 import { CodeRunnerProcessor } from './code-runner.processor';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Module({
   imports: [QueueModule], 
-  providers: [CodeRunnerService, CodeRunnerProcessor],
+  providers: [CodeRunnerService, CodeRunnerProcessor , PrismaService],
   controllers: [CodeRunnerController],
 })
 export class CodeRunnerModule {}

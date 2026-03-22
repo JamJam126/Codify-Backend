@@ -13,17 +13,14 @@ export class ClassroomMemberRepositoryPrisma
   async addMemberBulks(
     classroomId: number,
     members: ClassroomMember[]
-  ): Promise<ClassroomMember[]> {
+  ): Promise<void> {
     await this.prisma.classroomUser.createMany({
       data: members.map(member => ({
         classroom_id: classroomId,
         user_id: member.userId,
         role: member.role,
       })),
-      skipDuplicates: true,
     });
-
-    return members;
   }
   
   async removeMember(classroomId: number, userId: number): Promise<void> {
@@ -118,29 +115,5 @@ export class ClassroomMemberRepositoryPrisma
         name: result.user.name
       })
     );
-  }
-
-  async isOwner(classroomId: number, userId: number): Promise<boolean> {
-    const member = await this.prisma.classroomUser.findFirst({
-      where: { classroom_id: classroomId, user_id: userId, role: Role.OWNER },
-      select: { id: true },
-    });
-
-    return !!member;
-  }
-
-  async isAdmin(classroomId: number, userId: number): Promise<boolean> {
-    const member = await this.prisma.classroomUser.findFirst({
-      where: { 
-        classroom_id: classroomId, 
-        user_id: userId, 
-        role: {
-          in: [Role.OWNER, Role.TEACHER]
-        } 
-      },
-      select: { id: true },
-    });
-
-    return !!member;
   }
 }

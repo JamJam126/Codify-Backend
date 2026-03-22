@@ -20,6 +20,7 @@ import {
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiBearerAuth,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 
 import { AssignmentService } from './assignment.service';
@@ -30,6 +31,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CurrentUserDto } from '../auth/dto/current-user.dto';
 import { AttachChallengesDto } from './dto/attach-challenge.dto';
+import { UpdateAssignmentChallengeDto } from './dto/update-assignment-challenge.dto';
 
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
@@ -55,24 +57,19 @@ export class AssignmentController {
     return this.service.create(classroomId, user.id, dto);
   }
 
-  @Post(':id/challenges')
-  @ApiOperation({ summary: 'Attach coding challenges to assignment' })
+  // =============== FIND BY CLASSROOM =================
+  @Get()
+  @ApiOperation({ summary: 'Get all assignments by classroom ID' })
   @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiBody({ type: AttachChallengesDto })
-  @ApiOkResponse({ description: 'Challenges attached successfully' })
-  attachChallenges(
+  @ApiOkResponse({
+    description: 'List of assignments in the classroom',
+    type: [AssignmentResponseDto],
+  })
+  findByClassroom(
     @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Param('id', ParseIntPipe) assignmentId: number,
-    @Body() dto: AttachChallengesDto,
-    @CurrentUser() user: CurrentUserDto,
+    @CurrentUser() user: CurrentUserDto
   ) {
-    return this.service.attachChallenges(
-      classroomId,
-      assignmentId,
-      user.id,
-      dto.challengeIds,
-    );
+    return this.service.findAllByClassroomId(classroomId, user.id);
   }
 
   // =============== FIND ONE =================
@@ -91,21 +88,6 @@ export class AssignmentController {
     @CurrentUser() user: CurrentUserDto,
   ) {
     return this.service.findAssignmentDetail(id, classroomId, user.id);
-  }
-
-  // =============== FIND BY CLASSROOM =================
-  @Get()
-  @ApiOperation({ summary: 'Get all assignments by classroom ID' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiOkResponse({
-    description: 'List of assignments in the classroom',
-    type: [AssignmentResponseDto],
-  })
-  findByClassroom(
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto
-  ) {
-    return this.service.findAllByClassroomId(classroomId, user.id);
   }
 
   // =============== UPDATE =================
@@ -127,6 +109,114 @@ export class AssignmentController {
     return this.service.update(id, classroomId, user.id, dto);
   }
 
+  // =============== UPDATE CHALLENGE SNAPSHOT ===============
+  @Patch(':id/challenges/:assignmentChallengeId')
+  @ApiOperation({ summary: 'Update assignment challenge snapshot' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
+  @ApiParam({
+    name: 'assignmentChallengeId',
+    example: 5,
+    description: 'Assignment challenge snapshot ID',
+  })
+  updateAssignmentChallenge(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Param('assignmentChallengeId', ParseIntPipe) assignmentChallengeId: number,
+    @Body() dto: UpdateAssignmentChallengeDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.updateAssignmentChallenge(
+      classroomId,
+      assignmentId,
+      assignmentChallengeId,
+      user.id,
+      dto,
+    );
+  }
+
+  // =============== ATTACH CHALLENGES ===============
+  @Post(':id/challenges')
+  @ApiOperation({ summary: 'Attach coding challenges to assignment' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiBody({ type: AttachChallengesDto })
+  @ApiOkResponse({ description: 'Challenges attached successfully' })
+  attachChallenges(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Body() dto: AttachChallengesDto,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.attachChallenges(
+      classroomId,
+      assignmentId,
+      user.id,
+      dto.challengeIds,
+    );
+  }
+
+  // =============== REMOVE CHALLENGE ===============
+  @Delete(':id/challenges/:challengeId')
+  @ApiOperation({ summary: 'Remove a coding challenge from an assignment' })
+  @ApiParam({ name: 'classroomId', example: 3, description: 'Classroom ID' })
+  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
+  @ApiParam({ name: 'challengeId', example: 5, description: 'Coding challenge ID' })
+  @ApiNoContentResponse({ description: 'Challenge removed successfully' })
+  @ApiNotFoundResponse({ description: 'Assignment or challenge not found' })
+  @ApiBadRequestResponse({ description: 'Cannot modify a published assignment' })
+  @HttpCode(204)
+  removeChallenge(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Param('challengeId', ParseIntPipe) challengeId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) { 
+    return this.service.removeChallenge(
+      classroomId,
+      assignmentId,
+      challengeId,
+      user.id,
+    );
+  }
+
+  // =============== GET CHALLENGE DETAILS ===============
+  @Get(':id/challenges/:challengeId')
+  @ApiOperation({ summary: 'Get assignment challenge detail' })
+  @ApiParam({ name: 'classroomId', example: 3, description: 'Classroom ID' })
+  @ApiParam({ name: 'id', example: 1, description: 'Assignment ID' })
+  @ApiParam({ name: 'challengeId', example: 5, description: 'Challenge ID' })
+  getChallengeDetail(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Param('challengeId', ParseIntPipe) challengeId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.getChallengeDetail(
+      classroomId,
+      assignmentId,
+      challengeId,
+      user.id,
+    );
+  }
+
+
+  // =============== DELETE =================
+  @Delete(':id')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete an assignment' })
+  @ApiParam({ name: 'classroomId', example: 3 })
+  @ApiParam({ name: 'id', example: 1 })
+  @ApiNoContentResponse({ description: 'Assignment deleted successfully' })
+  @ApiNotFoundResponse({ description: 'Assignment not found' })
+  delete(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.service.delete(id, classroomId, user.id);
+  }
+
   // =============== PUBLISH =================
   @Patch(':id/publish')
   @ApiOperation({ summary: 'Publish an assignment' })
@@ -144,35 +234,19 @@ export class AssignmentController {
     return this.service.publish(id, classroomId, user.id);
   }
 
-  @Patch(':id/unpublish')
-  @ApiOperation({ summary: 'Unpublish an assignment' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiOkResponse({
-    description: 'Assignment unpublished successfully',
-    type: AssignmentResponseDto,
-  })
-  unpublish(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    return this.service.unPublish(id, classroomId, user.id);
-  }
-
-  // =============== DELETE =================
-  @Delete(':id')
-  @HttpCode(204)
-  @ApiOperation({ summary: 'Delete an assignment' })
-  @ApiParam({ name: 'classroomId', example: 3 })
-  @ApiParam({ name: 'id', example: 1 })
-  @ApiNoContentResponse({ description: 'Assignment deleted successfully' })
-  @ApiNotFoundResponse({ description: 'Assignment not found' })
-  delete(
-    @Param('id', ParseIntPipe) id: number,
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    return this.service.delete(id, classroomId, user.id);
-  }
+  // @Patch(':id/unpublish')
+  // @ApiOperation({ summary: 'Unpublish an assignment' })
+  // @ApiParam({ name: 'classroomId', example: 3 })
+  // @ApiParam({ name: 'id', example: 1 })
+  // @ApiOkResponse({
+  //   description: 'Assignment unpublished successfully',
+  //   type: AssignmentResponseDto,
+  // })
+  // unpublish(
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Param('classroomId', ParseIntPipe) classroomId: number,
+  //   @CurrentUser() user: CurrentUserDto,
+  // ) {
+  //   return this.service.unPublish(id, classroomId, user.id);
+  // }
 }

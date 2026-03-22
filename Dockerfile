@@ -21,7 +21,7 @@ COPY . .
 # Build the TypeScript project
 RUN npm run build
 
-EXPOSE 4000
+EXPOSE 3000
 
 # Start production server
-CMD ["npm", "run", "start:prod"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]

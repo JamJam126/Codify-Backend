@@ -5,6 +5,7 @@ import { CreateClassroomDto } from '../presentation/dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../presentation/dto/update-classroom.dto';
 import { Role } from '../domain/role.enum';
 import { ClassroomMembershipService } from './classroom-membership.service';
+import { ClassroomResponseDto } from '../presentation/dto/classroom-response.dto';
 
 @Injectable()
 export class ClassroomService {
@@ -15,7 +16,7 @@ export class ClassroomService {
     private readonly membershipService: ClassroomMembershipService
   ) {}
 
-  async create(dto: CreateClassroomDto, userId: number): Promise<Classroom> {
+  async create(dto: CreateClassroomDto, userId: number): Promise<ClassroomResponseDto> {
     const classCode = this.generateClassCode();
     const classroom = Classroom.create({
       classCode,
@@ -34,11 +35,47 @@ export class ClassroomService {
     }
   }
 
-  async findOne(id: number, userId: number): Promise<Classroom> {
-    const classroom = await this.repo.findById(id);
-    if (!classroom) throw new NotFoundException('Classroom not found');
+  // REFACTORED
+  async update(id: number, dto: UpdateClassroomDto, userId: number) {
+    await this.membershipService.ensureRole(id, userId, [
+      Role.OWNER,
+      Role.TEACHER
+    ]);
 
-    await this.membershipService.assertIsMember(id, userId);
+    const classroom = await this.repo.findById(id);
+
+    if (!classroom) {
+      throw new NotFoundException('Classroom not found');
+    }
+
+    if (dto.name !== undefined) classroom.rename(dto.name);
+    if (dto.description !== undefined)
+      classroom.updateDescription(dto.description);
+
+    this.repo.update(classroom);
+
+    return this.repo.findByIdWithDetails(id, userId);
+  }
+
+  // REFACTORED
+  async delete(classroomId: number, userId: number) {    
+    await this.membershipService.ensureRole(classroomId, userId, [
+      Role.OWNER,
+    ]);
+    await this.repo.deleteById(classroomId);
+  }
+
+  // REFACTORED
+  async findAll(userId: number) {
+    return this.repo.findAllByUser(userId);
+  }
+
+  // REFACTORED
+  async findOne(id: number, userId: number): Promise<ClassroomResponseDto> {
+    const classroom = await this.repo.findByIdWithDetails(id, userId);
+    if (!classroom) {
+      throw new NotFoundException('Classroom not found');
+    }
 
     return classroom;
   }
@@ -48,28 +85,6 @@ export class ClassroomService {
     if (!classroom) throw new NotFoundException('Classroom not found');
     
     return classroom;
-  }
-
-  async findAll(userId: number) {
-    return this.repo.findAllByUser(userId);
-  }
-
-  async update(id: number, dto: UpdateClassroomDto, userId: number) {
-    await this.membershipService.ensureRole(id, userId, [Role.OWNER, Role.TEACHER])
-    const classroom = await this.findOne(id, userId);
-
-    if (dto.name !== undefined) classroom.rename(dto.name);
-    if (dto.description !== undefined)
-      classroom.updateDescription(dto.description);
-
-    return this.repo.update(classroom);
-  }
-
-  async delete(classroomId: number, userId: number) {
-    await this.membershipService.ensureRole(classroomId, userId, [Role.OWNER])
-    await this.findOne(classroomId, userId);
-    
-    await this.repo.deleteById(classroomId);
   }
 
   private generateClassCode(): string {

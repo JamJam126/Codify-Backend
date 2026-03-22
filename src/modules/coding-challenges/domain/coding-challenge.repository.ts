@@ -1,5 +1,5 @@
-import { CodingChallenge } from "../coding-challenge.entity";
-import { UpdateCodingChallengeDto } from "../dto/update-coding-challenge.dto";
+import { CodingChallenge } from "./coding-challenge.entity";
+import { UpdateCodingChallengeDto } from "../presentation/dto/update-coding-challenge.dto";
 
 export interface CodingChallengeRepository{
   create(challenge: CodingChallenge): Promise<CodingChallenge>;

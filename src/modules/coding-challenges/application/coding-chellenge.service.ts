@@ -1,9 +1,9 @@
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException} from "@nestjs/common";
-import { CreateCodingChallengeDto } from "./dto/create-coding-challenge.dto";
-import type { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
-import { CodingChallenge } from "./coding-challenge.entity";
-import { CurrentUserDto } from "../auth/dto/current-user.dto";
-import { UpdateCodingChallengeDto } from "./dto/update-coding-challenge.dto";
+import { CreateCodingChallengeDto } from "../presentation/dto/create-coding-challenge.dto";
+import type { CodingChallengeRepository } from "../domain/coding-challenge.repository";
+import { CodingChallenge } from "../domain/coding-challenge.entity";
+import { CurrentUserDto } from "../../auth/dto/current-user.dto";
+import { UpdateCodingChallengeDto } from "../presentation/dto/update-coding-challenge.dto";
 
 @Injectable()
 export class CodingChallengeService{
@@ -17,18 +17,17 @@ export class CodingChallengeService{
     dto: CreateCodingChallengeDto,
     userId: number
   ) {
-    const exist = await this.repo.findByTitle(dto.title);
-    if (exist) throw new ConflictException('Challenge title already exists');
 
     let challenge: CodingChallenge;
     try {
       challenge = CodingChallenge.create({
         userId: userId,
-        tagId: 1,
+        tagId: dto.tagId,
         title: dto.title,
         description: dto.description!,
         starterCode: dto.starterCode!,
-        language: dto.language
+        language: dto.language,
+        difficulty:dto.difficulty
       })
     } catch (error) {
       throw new BadRequestException(error.message);

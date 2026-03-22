@@ -6,9 +6,11 @@ import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { JobSuccessDto } from "./dto/job-success.dto";
 import { JobFailureDto } from "./dto/job-failure.dto";
 import { JobQueueDto } from "./dto/job-queue.dto";
+import { TestCodeDto } from "./dto/test-code.dto";
+import { TestCodeResponseDto } from "./dto/test-code-response.dto";
 
 @ApiBearerAuth('access-token')
-//@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @ApiTags('code runner')
 @Controller("code-runner")
 export class CodeRunnerController{
@@ -50,6 +52,7 @@ export class CodeRunnerController{
     const result = await this.codeRunnerService.runCode(
         body.language,
         body.code,
+        body.input,
     );
 
     return result; 
@@ -65,7 +68,7 @@ export class CodeRunnerController{
         required: true,
         example: "9"
     })
-    @ApiExtraModels(JobSuccessDto , JobFailureDto , JobQueueDto)
+    @ApiExtraModels(JobSuccessDto, JobFailureDto, JobQueueDto, TestCodeResponseDto)
     @ApiResponse({
         status: 200,
         description: "Returns the job status. Can be a successful result or a failure.",
@@ -74,6 +77,16 @@ export class CodeRunnerController{
                 { $ref: getSchemaPath(JobSuccessDto), },
                 { $ref: getSchemaPath(JobFailureDto), },
                 { $ref: getSchemaPath(JobQueueDto), },
+                {
+                    type: "object",
+                    properties: {
+                        jobId: { type: "string", example: "1" },
+                        state: { type: "string", example: "completed" },
+                        result: {
+                            $ref: getSchemaPath(TestCodeResponseDto)
+                        }
+                    }
+                }
             ]
         }
     })
@@ -83,5 +96,42 @@ export class CodeRunnerController{
     }catch(error){
         throw new HttpException("Job Not Found" , HttpStatus.NOT_FOUND);
     }
+  }
+
+    @Post("/test")
+    @ApiOperation({
+        summary: "Run C code against challenge test cases"
+    })
+    @ApiBody({
+        type: TestCodeDto,
+        examples: {
+            example: {
+                summary: "C test submission",
+                value: {
+                    challengeId: 1,
+                    language: "c",
+                    code: `#include <stdio.h>
+
+int main() {
+    int a,b;
+    scanf("%d %d", &a, &b);
+    printf("%d", a+b);
+    return 0;
+}`
+                }
+            }
+        }
+    })
+    @ApiResponse({
+        status: 201,
+        type: JobQueueDto,
+        description: "Job queued for test execution"
+    })
+  async testCode(@Body() body: TestCodeDto){
+      if (!body.language || !body.code || !body.challengeId) {
+          throw new HttpException("Missing language or Code or challengeId", HttpStatus.BAD_REQUEST);
+      }
+
+      return this.codeRunnerService.runTestCode(body.challengeId, body.code, body.language);
   }
 }

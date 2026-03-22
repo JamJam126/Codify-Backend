@@ -1,11 +1,13 @@
 import { Module } from "@nestjs/common";
-import { CodingChallengeController } from "./coding-challenge.controller";
+import { CodingChallengeController } from "./presentation/coding-challenge.controller";
 import { PrismaService } from "prisma/prisma.service";
-import { CodingChallengeService } from "./coding-chellenge.service";
-import { CodingChallengeRepository } from "./repositories/coding-challenge.repository";
+import { CodingChallengeService } from "./application/coding-chellenge.service";
+import { CodingChallengeRepository } from "./domain/coding-challenge.repository";
 import { CodingChallengePrismaRepository } from "./repositories/coding-challenge.prisma.repository";
 import { TestCasePrismaRepository } from "./repositories/test-case.prisma.repository";
-import { TestCaseService } from "./test-case.service";
+import { TestCaseService } from "./application/test-case.service";
+import { TagService } from "./application/tag.service";
+import { TagPrismaRepository } from "./repositories/tag.prisma.repository";
 
 @Module({
   controllers:[CodingChallengeController],
@@ -13,6 +15,7 @@ import { TestCaseService } from "./test-case.service";
     PrismaService,
     CodingChallengeService,
     TestCaseService,
+    TagService,
     {
       provide: "CodingChallengeRepository",
       useClass: CodingChallengePrismaRepository
@@ -20,6 +23,10 @@ import { TestCaseService } from "./test-case.service";
     {
       provide: "TestCaseRepository",
       useClass: TestCasePrismaRepository
+    },
+    {
+      provide: "TagRepository",
+      useClass: TagPrismaRepository
     }
   ],
   exports: [CodingChallengeService]

@@ -1,4 +1,4 @@
-import { TestCase } from "../test-case.entity";
+import { TestCase } from "./test-case.entity";
 
 export interface TestCaseRepository {
   create(testCase: TestCase): Promise<TestCase>;

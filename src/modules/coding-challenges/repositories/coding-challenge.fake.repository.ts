@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from "@nestjs/common";
-import { CodingChallenge } from "../coding-challenge.entity";
-import { UpdateCodingChallengeDto } from "../dto/update-coding-challenge.dto";
-import { CodingChallengeRepository } from "./coding-challenge.repository";
+import { CodingChallenge } from "../domain/coding-challenge.entity";
+import { UpdateCodingChallengeDto } from "../presentation/dto/update-coding-challenge.dto";
+import { CodingChallengeRepository } from "../domain/coding-challenge.repository";
 
 export class FakeCodingChallengeRepository implements CodingChallengeRepository {
   getAllChallengeByAssignment(assignmentId: number): Promise<CodingChallenge[]> {
@@ -14,13 +14,15 @@ export class FakeCodingChallengeRepository implements CodingChallengeRepository 
     const created = CodingChallenge.rehydrate({
       id: this.idSeq++,
       userId: challenge.userId,
-      tagId: challenge.tagId,
+      tagId: 1,
+      tag:"Array",
       title: challenge.title,
       description: challenge.description,
       starterCode: challenge.starterCode,
       language: challenge.language,
       createdAt: new Date(),
       updatedAt: new Date(),
+      difficulty:challenge.difficulty
     });
 
     this.items.push(created);
@@ -37,13 +39,15 @@ export class FakeCodingChallengeRepository implements CodingChallengeRepository 
     return CodingChallenge.rehydrate({
       id: found.id!,
       userId: found.userId,
-      tagId: found.tagId,
+      tagId: 1,
+      tag:"Array",
       title: found.title,
       description: found.description,
       starterCode: found.starterCode,
       language: found.language,
       createdAt: found.createdAt!,
       updatedAt: found.updatedAt!,
+      difficulty:found.difficulty
     });
   }
 
@@ -52,13 +56,15 @@ export class FakeCodingChallengeRepository implements CodingChallengeRepository 
     return found ? CodingChallenge.rehydrate({
       id: found.id!,
       userId: found.userId,
-      tagId: found.tagId,
+      tagId: 1,
+      tag:"Array",
       title: found.title,
       description: found.description,
       starterCode: found.starterCode,
       language: found.language,
       createdAt: found.createdAt!,
       updatedAt: found.updatedAt!,
+      difficulty:found.difficulty
     }) : undefined;
   }
 
@@ -69,13 +75,15 @@ export class FakeCodingChallengeRepository implements CodingChallengeRepository 
         CodingChallenge.rehydrate({
           id: c.id!,
           userId: c.userId,
-          tagId: c.tagId,
+          tagId: 1,
+          tag:"Array",
           title: c.title,
           description: c.description,
           starterCode: c.starterCode,
           language: c.language,
           createdAt: c.createdAt!,
           updatedAt: c.updatedAt!,
+          difficulty:c.difficulty
         }),
       );
   }
@@ -99,13 +107,15 @@ export class FakeCodingChallengeRepository implements CodingChallengeRepository 
     const updated = CodingChallenge.rehydrate({
       id: existing.id!,
       userId: existing.userId,
-      tagId: existing.tagId,
+      tagId: 1,
+      tag:"Array",
       title: dto.title ?? existing.title,
       description: dto.description ?? existing.description,
       starterCode: dto.starterCode ?? existing.starterCode,
       language: dto.language ?? existing.language,
       createdAt: existing.createdAt!,
       updatedAt: new Date(),
+      difficulty:"MEDIUM"
     });
 
     this.items[index] = updated;

@@ -1,12 +1,12 @@
 import { INestApplication, UnauthorizedException, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { CodingChallengeController } from './coding-challenge.controller';
-import { CodingChallengeService } from './coding-chellenge.service';
-import { TestCaseService } from './test-case.service';
-import { FakeCodingChallengeRepository } from './repositories/coding-challenge.fake.repository';
-import { FakeTestCaseRepository } from './repositories/test-case.fake.repository';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CodingChallengeController } from '../presentation/coding-challenge.controller';
+import { CodingChallengeService } from '../application/coding-chellenge.service';
+import { TestCaseService } from '../application/test-case.service';
+import { FakeCodingChallengeRepository } from '../repositories/coding-challenge.fake.repository';
+import { FakeTestCaseRepository } from '../repositories/test-case.fake.repository';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 
 describe('Coding Challenge Controller (E2E)', () => {
     let app: INestApplication;

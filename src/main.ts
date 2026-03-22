@@ -3,12 +3,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { PrismaExceptionFilter } from './common/filter/prisma-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalFilters(new PrismaExceptionFilter)
   
   const config = new DocumentBuilder()
     .setTitle('the BEST API')

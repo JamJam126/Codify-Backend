@@ -3,6 +3,7 @@ import {
   IsOptional,
   MaxLength
 } from "class-validator";
+import { Difficulty } from "./create-coding-challenge.dto";
 
 export class UpdateCodingChallengeDto {
 
@@ -22,4 +23,10 @@ export class UpdateCodingChallengeDto {
   @IsString()
   @IsOptional()
   language?: string;
+
+  @IsOptional()
+  difficulty?: Difficulty;
+
+  @IsOptional()
+  tagId?:number;
 }

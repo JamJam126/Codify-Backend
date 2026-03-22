@@ -25,6 +25,6 @@ import { UsersModule } from '../users/users.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, UserService, JwtStrategy],
+  providers: [AuthService, PrismaService, JwtStrategy],
 })
 export class AuthModule {}
