@@ -18,6 +18,8 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/codify
       CODE_RUNNER_VOLUME_NAME: ${CODE_RUNNER_VOLUME_NAME}
+      # Added: URL for evaluation service running on the host machine
+      EVALUATION_SERVICE_URL: http://host.docker.internal:8000
     volumes:
       - code-temp:/code-temp
       - /var/run/docker.sock:/var/run/docker.sock
