@@ -192,6 +192,81 @@ Swagger (OpenAPI) documentation is available once the server is running:
 
 <http://localhost:3000/api>
 
+## 🔌 Integration with Codify-Evaluation (Feedback Service)
+
+The backend can proxy requests to the **Codify-Evaluation** Python service (AI‑powered feedback generation) and merge its OpenAPI specification into the main Swagger UI. This allows you to test both APIs from a single interface at `http://localhost:3000/api`.
+
+### 1. Clone the Evaluation Service
+
+Make sure you have both repositories in the same parent folder:
+
+```bash
+cd /path/to/your/projects
+git clone https://github.com/your-org/Codify-Evaluation.git   # replace with actual URL
+```
+
+The folder structure should look like:
+
+```
+parent-folder/
+├── Codify-Backend/
+└── Codify-Evaluation/
+```
+
+### 2. Set Up the Evaluation Service
+
+```bash
+cd Codify-Evaluation
+
+# Create and activate a virtual environment
+python -m venv venv
+source venv/bin/activate      # Linux/macOS
+# or .\venv\Scripts\activate   # Windows
+
+# Install dependencies
+pip install -e .
+
+# Copy environment variables
+cp .env.example .env
+# Edit .env to add your LLM provider keys (GROQ_API_KEY, etc.) and database URL
+
+# Run database migrations (creates tables in the same PostgreSQL database used by the backend)
+alembic upgrade head
+
+# (Optional) Seed the knowledge base
+python scripts/seed_knowledge.py
+```
+
+### 3. Run Both Services Locally
+
+**Terminal 1 – Evaluation Service**
+```bash
+cd Codify-Evaluation
+source venv/bin/activate
+uvicorn src.evaluator.main:app --reload --port 8000
+```
+
+**Terminal 2 – Backend** (from the backend folder)
+```bash
+cd Codify-Backend
+pnpm start:dev
+```
+
+Then open `http://localhost:3000/api` – the Swagger UI will show **both** backend and evaluation endpoints (evaluation endpoints are prefixed with `/evaluation`).
+
+### 4. Test the Integration
+
+In the Swagger UI, expand `GET /evaluation/api/v1/health`, click **Try it out** → **Execute**.  
+Expected response: `{"status":"ok"}`.
+
+All evaluation endpoints are available under `/evaluation/api/v1/...` and can be tested from the same UI.
+
+### Troubleshooting
+
+- **Evaluation endpoints missing in Swagger** – Check the backend logs for `Failed to fetch evaluation spec`. Ensure the evaluation service is running on port 8000.
+- **Health check fails** – Verify the evaluation service is running and that `EVALUATION_SERVICE_URL` is set correctly (defaults to `http://localhost:8000`).
+- **Port conflicts** – If port 8000 is busy, change the evaluation service port and update `EVALUATION_SERVICE_URL` in the backend’s `.env` file.
+
 ## 🐳 Docker Compose Setup
 
 Docker Compose runs everything together — app, Redis, PostgreSQL, and pgAdmin — in one command. Use this instead of running services manually.
@@ -401,4 +476,3 @@ See [docs/ORGANIZATION.md](docs/ORGANIZATION.md) for full explanation of folders
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for backend architecture and module flow.
 
 ---
-
