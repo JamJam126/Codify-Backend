@@ -1,20 +1,25 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
-import { Queue } from "bullmq";
+import { Queue, QueueEvents } from "bullmq";
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class QueueService implements OnModuleInit, OnModuleDestroy {
     private queue: Queue;
+    private queueEvents: QueueEvents;
 
     constructor(private readonly configService: ConfigService) { }
 
     async onModuleInit() {
-        this.queue = new Queue("codifyQueue", {
-            connection: {
-                host: this.configService.get("REDIS_HOST") || "127.0.0.1",
-                port: this.configService.get("REDIS_PORT") || 6379
-            }
-        });
+        const connection = {
+            host: this.configService.get("REDIS_HOST") || "127.0.0.1",
+            port: this.configService.get("REDIS_PORT") || 6379
+        };
+
+        this.queue = new Queue("codifyQueue", { connection });
+
+        this.queueEvents = new QueueEvents("codifyQueue", { connection });
+
+        await this.queueEvents.waitUntilReady();
     }
 
     async addJob(name: string, data: any) {
@@ -27,5 +32,10 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
 
     async onModuleDestroy() {
         await this.queue.close();
+        await this.queueEvents.close();
+    }
+
+    getQueueEvent() {
+        return  this.queueEvents
     }
 }

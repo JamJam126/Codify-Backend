@@ -20,6 +20,14 @@ export type AssignmentWithChallenges = Prisma.AssignmentGetPayload<{
 
 export type AssignmentChallengeWithTestCases = Prisma.AssignmentChallengeGetPayload<{
   include: {
-    test_cases: true
+    test_cases: {
+      include: {
+        assignmentChallenge: {
+          select: {
+            original_challenge_id: true
+          }
+        }
+      }
+    },
   }
 }>

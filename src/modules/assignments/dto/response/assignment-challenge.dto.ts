@@ -5,6 +5,12 @@ export class AssignmentChallengeDto {
   @ApiProperty({ example: 1 })
   id: number;
 
+  @ApiProperty({ example: 1 })
+  originalChallengeId?: number;
+
+  @ApiProperty({ example: 'FizzBuzz Challenge' })
+  originalTitle: string;
+
   @ApiProperty({ example: 'FizzBuzz Challenge' })
   title: string;
 
@@ -19,4 +25,7 @@ export class AssignmentChallengeDto {
 
   @ApiProperty({ example: 'MEDIUM' })
   difficulty: string;
+
+  @ApiProperty({ example: 'Array' })
+  tagName?: string
 }

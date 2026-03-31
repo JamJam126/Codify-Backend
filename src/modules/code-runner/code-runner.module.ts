@@ -9,5 +9,6 @@ import { PrismaService } from 'prisma/prisma.service';
   imports: [QueueModule], 
   providers: [CodeRunnerService, CodeRunnerProcessor , PrismaService],
   controllers: [CodeRunnerController],
+  exports: [CodeRunnerService]
 })
 export class CodeRunnerModule {}

@@ -25,4 +25,7 @@ export class AssignmentTestCaseDto {
 
   @ApiProperty({ example: 1 })
   assignmentChallengeId: number;
+
+  @ApiProperty({ example: 1 })
+  originalChallengeId?: number;
 }

@@ -8,9 +8,10 @@ import { AssignmentModule } from "../assignments/assignment.module";
 import { CodingChallengModule } from "../coding-challenges/coding-challenge.module";
 import { FeedbackService } from "./application/feedback.service";
 import { FeedbackPrismaRepository } from "./infrastructure/feedback.prisma.repository";
+import { CodeRunnerModule } from "../code-runner/code-runner.module";
 
 @Module({
-  imports: [ClassroomsModule, CodingChallengModule],
+  imports: [ClassroomsModule, CodingChallengModule, CodeRunnerModule],
   controllers: [SubmissionController],
   providers: [
     SubmissionService,

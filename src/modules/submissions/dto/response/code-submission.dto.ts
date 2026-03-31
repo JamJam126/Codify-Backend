@@ -10,4 +10,7 @@ export class CodeSubmissionDto {
 
   @ApiProperty({ example: 'function fizzBuzz() {}' })
   code: string;
+
+  @ApiProperty({ example: 'amazon' })
+  feedback?: string;
 }

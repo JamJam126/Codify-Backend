@@ -80,7 +80,15 @@ export class AssignmentPrismaRepository implements AssignmentRepository {
         id: challengeId,
       },
       include: {
-        test_cases: true
+        test_cases: {
+          include: {
+            assignmentChallenge: {
+              select: {
+                original_challenge_id: true
+              }
+            }
+          }
+        },
       }
     });
 

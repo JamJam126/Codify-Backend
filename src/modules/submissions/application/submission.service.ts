@@ -9,12 +9,15 @@ import { CodingChallengeService } from "../../coding-challenges/application/codi
 import { deriveSubmissionStatus } from "src/common/utils/derive-submission-status.util";
 import { SubmissionStatus } from "@prisma/client";
 import { SubmissionDto } from "../dto/response/submission.dto";
+import { CodeRunnerService } from "src/modules/code-runner/code-runner.service";
+import { SubmissionItemDto } from "../dto/response/submission-item.dto";
 
 @Injectable() 
 export class SubmissionService {
   constructor(
     private readonly membershipService: ClassroomMembershipService,
     private readonly challengeService: CodingChallengeService,
+    private readonly runnerSerivice: CodeRunnerService,
 
     @Inject("SubmissionRepository")
     private readonly repo: SubmissionRepository
@@ -48,7 +51,8 @@ export class SubmissionService {
     submissionId: number,
     userId: number,
     dto: UpdateSubmissionDto
-  ) { 
+  ) {
+    console.log(dto)
     await this.membershipService.ensureRole(classroomId, userId, [Role.STUDENT]);
 
     const submission = await this.repo.findById(submissionId);
@@ -82,17 +86,31 @@ export class SubmissionService {
       throw new NotFoundException('Submission not found');
     }
 
-    submission.turnIn();
+    // submission.turnIn();
 
-    return this.repo.update(submission);
+    const updated = await this.repo.update(submission);
+
+    this.runnerSerivice.runSubmittedCode(submissionId);
+
+    return updated;
   }
 
   async getAssignmentSubmissions(
     classroomId: number,
     assignmentId: number,
     userId: number
-  ) { 
-    return await this.repo.findByAssignment(assignmentId);
+  ): Promise<SubmissionItemDto[]> { 
+    const results = await this.repo.findByAssignment(assignmentId);
+
+    return results.map(r => ({
+      id: r.id,
+      userId: r.user_id,
+      username: r.user.name,
+      assignmentId: r.assignment_id,
+      status: deriveSubmissionStatus(r.submitted_at, r.assignment.due_at),
+      totalScore: r.total_score,
+      submittedAt: r.submitted_at,
+    }));
   }
 
   async getSubmission(
@@ -120,7 +138,8 @@ export class SubmissionService {
       codeSubmissions: submission.codeSubmissions.map(c => ({
         id: c.id!,
         challengeId: c.assignment_challenge_id,
-        code: c.code
+        code: c.code,
+        feedback: c.feedbackChallenge?.text
       }))
     };
   }

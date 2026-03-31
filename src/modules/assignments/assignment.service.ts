@@ -105,12 +105,15 @@ export class AssignmentService {
       dueAt: assignment.due_at,
       isPublished: assignment.is_published,
       codingChallenges: assignment.assignmentChallenges.map(c => ({
-        id: c.id,
+        id: c.id ?? 0,
+        originalChallengeId: c.original_challenge_id ?? 0,
+        originalTitle: c.original_title,
         title: c.title,
         description: c.description,
         startCode: c.starter_code,
         language: c.language,
         difficulty: c.difficulty,
+        tagName: c.tag_name ?? undefined,
       }))
     };
   }
@@ -148,6 +151,7 @@ export class AssignmentService {
         score: tc.score,
         isHidden: tc.is_hidden,
         assignmentChallengeId: tc.assignment_challenge_id,
+        originalChallengeId: tc.assignmentChallenge.original_challenge_id ?? undefined
       }))
     };
   }
@@ -175,11 +179,14 @@ export class AssignmentService {
       isPublished: updated.isPublished,
       codingChallenges: assignmentChallenges.map(c => ({
         id: c.id!,
+        originalChallengeId: c.originalChallengeId!,
+        originalTitle: c.originalTitle,
         title: c.title,
         description: c.description,
         startCode: c.starterCode,
         language: c.language,
-        difficulty: c.difficulty
+        difficulty: c.difficulty,
+        tagName: c.tagName ?? undefined,
       }))
     }    
   }
@@ -204,11 +211,14 @@ export class AssignmentService {
 
     return {
       id: updated.id!,
+      originalChallengeId: updated.originalChallengeId ?? undefined,
+      originalTitle: updated.originalTitle,
       title: updated.title,
       description: updated.description,
       startCode: updated.starterCode,
       language: updated.language,
-      difficulty: updated.difficulty
+      difficulty: updated.difficulty,
+      tagName: updated.tagName ?? undefined
     };
   }
 
@@ -232,12 +242,15 @@ export class AssignmentService {
       dueAt: publishedAssignment.dueAt,
       isPublished: publishedAssignment.isPublished,
       codingChallenges: assignmentChallenges.map(c => ({
-        id: c.id!,
+        id: c.id ?? 0,
+        originalChallengeId: c.originalChallengeId ?? 0,
+        originalTitle: c.originalTitle,
         title: c.title,
         description: c.description,
         startCode: c.starterCode,
         language: c.language,
-        difficulty: c.difficulty
+        difficulty: c.difficulty,
+        tagName: c.tagName ?? undefined,
       }))
     }  
   }
