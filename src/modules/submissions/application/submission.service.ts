@@ -86,12 +86,11 @@ export class SubmissionService {
       throw new NotFoundException('Submission not found');
     }
 
-    // submission.turnIn();
+    submission.turnIn();
 
     const updated = await this.repo.update(submission);
 
     this.runnerSerivice.runSubmittedCode(submissionId);
-
     return updated;
   }
 
@@ -107,7 +106,7 @@ export class SubmissionService {
       userId: r.user_id,
       username: r.user.name,
       assignmentId: r.assignment_id,
-      status: deriveSubmissionStatus(r.submitted_at, r.assignment.due_at),
+      status: deriveSubmissionStatus(r.submitted_at, r.assignment.due_at,r.status),
       totalScore: r.total_score,
       submittedAt: r.submitted_at,
     }));
@@ -131,6 +130,7 @@ export class SubmissionService {
       status: deriveSubmissionStatus(
         submission.submitted_at || null, 
         submission.assignment.due_at,
+        submission.status
       ),
       totalScore: submission.total_score,
       submittedAt: submission.submitted_at,
@@ -168,6 +168,19 @@ export class SubmissionService {
       difficulty: codeSubmission.assignmentChallenge.difficulty,
       tagName: codeSubmission.assignmentChallenge.tag_name
     };
+  }
+
+  async giveScore(score: number, submissionId: number) {
+    const submission = await this.repo.findById(submissionId);
+
+    if (!submission) {
+      throw new NotFoundException("Submission not found");
+    }
+
+    submission.totalScore = score;
+    submission.status = "GRADED";
+
+    return await this.repo.update(submission);
   }
 
   // evaluate(classroomId, assignmentId, submissionId, dto)

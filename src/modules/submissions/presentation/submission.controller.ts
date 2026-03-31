@@ -141,6 +141,21 @@ export class SubmissionController {
   ) {
     return this.service.getSubmission(classroomId, assignmentId, submissionId, user.id);
   }
+  @Get(':submissionId/feedback')
+  @ApiOperation({ summary: 'Get feedback for a submission' })
+  getFeedback(
+    @Param('classroomId', ParseIntPipe) classroomId: number,
+    @Param('assignmentId', ParseIntPipe) assignmentId: number,
+    @Param('submissionId', ParseIntPipe) submissionId: number,
+    @CurrentUser() user: CurrentUserDto,
+  ) {
+    return this.feedbackService.getFeedback(
+      classroomId,
+      assignmentId,
+      submissionId,
+      user.id
+    );
+  }
     
   @Get(':submissionId/:codeSubmissionId')
   @ApiOperation({ summary: 'Get a specific submission' })
@@ -169,26 +184,7 @@ export class SubmissionController {
     );
   }
 
-  @Get(':submissionId/feedback')
-  @ApiOperation({ summary: 'Get a feedback from specific submission' })
-  @ApiParam({ name: 'classroomId', example: 1 })
-  @ApiParam({ name: 'assignmentId', example: 1 })
-  @ApiParam({ name: 'submissionId', example: 1 })
-  @ApiOkResponse({
-    description: 'Feedback found',
-  })
-  @ApiNotFoundResponse({ description: 'Feedback not found' })
-  getFeedback(
-    @Param('classroomId', ParseIntPipe) classroomId: number,
-    @Param('assignmentId', ParseIntPipe) assignmentId: number,
-    @Param('submissionId', ParseIntPipe) submissionId: number,
-    @CurrentUser() user: CurrentUserDto,
-  ) {
-    return this.feedbackService.getFeedback(
-      submissionId,
-      user.id
-    );
-  }
+  
 
   @Post(':submissionId/feedback')
   @ApiOperation({ summary: 'Create a new submission draft' })

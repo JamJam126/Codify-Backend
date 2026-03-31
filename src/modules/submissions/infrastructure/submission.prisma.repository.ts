@@ -137,6 +137,7 @@ export class SubmissionPrismaRepository implements SubmissionRepository {
       },
       data: {
         status: submission.status,
+        total_score:submission.totalScore,
         submitted_at: submission.submittedAt,
         updated_at: new Date(),
         codeSubmissions: {

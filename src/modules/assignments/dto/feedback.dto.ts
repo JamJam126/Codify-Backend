@@ -6,4 +6,7 @@ export class FeedbackDto {
   @MinLength(1)
   @MaxLength(1000)
   text: string;
+
+  score?: number;
+
 }

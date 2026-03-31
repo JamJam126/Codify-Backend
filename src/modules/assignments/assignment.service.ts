@@ -81,7 +81,8 @@ export class AssignmentService {
         isPublished: a.is_published,
         submissionStatus: deriveSubmissionStatus(
           submission?.submitted_at ?? null,
-          a.due_at
+          a.due_at,
+          submission?.status
         ),
         submittedAt: submission?.submitted_at ?? null,
         totalScore: submission?.total_score ?? 0,

@@ -1,8 +1,9 @@
-export type DisplayStatus = 'SUBMITTED' | 'MISSED' | 'LATE' | 'NOT SUBMITTED';
+export type DisplayStatus = 'SUBMITTED' | 'MISSED' | 'LATE' | 'NOT SUBMITTED'|'GRADED';
 
 export function deriveSubmissionStatus(
   submittedAt: Date | null,
-  dueAt: Date
+  dueAt: Date,
+  status:String
 ): DisplayStatus {
   const now = new Date();
 
@@ -12,6 +13,10 @@ export function deriveSubmissionStatus(
 
   if (submittedAt > dueAt) {
     return 'LATE';
+  }
+
+  if (status === 'GRADED') {
+    return 'GRADED';
   }
 
   return 'SUBMITTED';

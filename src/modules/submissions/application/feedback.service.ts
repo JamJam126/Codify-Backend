@@ -18,11 +18,27 @@ export class FeedbackService{
   ){}
 
   async getFeedback(
-    submissionId:number,
+    classroomId:number,
+    assignmentId:number,
+    submissionId: number,
     userId: number
-  ) {
+  ): Promise<FeedbackDto> {
+    const submissionDetail = await this.submissionService.getSubmission(classroomId,assignmentId,submissionId,userId);
 
- 
+    if (!submissionDetail) {
+      throw new NotFoundException(`Submission with id ${submissionId} not found`);
+    }
+  
+    const feedback = await this.repo.findBySubmissionId(submissionId);
+
+    if (!feedback) {
+      throw new NotFoundException(`Feedback for submission ${submissionId} not found`);
+    }
+
+    const dto = new FeedbackDto();
+    dto.text = feedback.feedback?.toString() ?? "";
+
+    return dto;
   }
 
   async createFeedback(
@@ -43,6 +59,8 @@ export class FeedbackService{
       submissionId: submissionId,
       feedback: dto.text,
     });
+
+    await this.submissionService.giveScore(dto.score!, submissionId);
 
     return await this.repo.create(feedback);
     
