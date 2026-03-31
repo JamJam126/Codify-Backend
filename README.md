@@ -48,12 +48,35 @@ GROQ_API_KEY=gsk_your_real_key_here
 LLM_MODEL=llama-3.1-8b-instant  # Or any model available in your Groq account
 ```
 
+It is **not** in the README yet. I only showed you how to start it, but forgot to add how to stop it! 
+
+Here is how to turn it off right now, plus the updated section to paste into your `README.md`.
+
+### How to stop the Qdrant container right now
+Since you ran it in the background (with `-d`), run these two commands in your terminal:
+
+```bash
+# 1. Find the container ID
+docker ps
+
+# 2. Stop and remove it (replace <ID> with the actual ID from the first command)
+docker stop <ID>
+docker rm <ID>
+```
+
 ### 4. Start the Vector Database (Optional but Recommended)
 Open a **second terminal** and run Qdrant via Docker:
 ```bash
 docker run -p 6333:6333 -d qdrant/qdrant:v1.12.1
 ```
 *(If skipped, the Python service will still start but will log a warning and run without RAG context).*
+
+**To stop the database when you are done:**
+```bash
+docker ps                   # Find the CONTAINER ID
+docker stop <CONTAINER_ID>  # Stop it
+docker rm <CONTAINER_ID>    # Remove it
+```
 
 ### 5. Start the FastAPI Server
 Back in your main terminal (with the venv activated):
