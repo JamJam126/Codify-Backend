@@ -11,6 +11,7 @@ venv/
 env/
 .env/
 .env.*.local
+.env
 
 # Byte-compiled / optimized files
 *.pyo
