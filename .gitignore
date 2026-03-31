@@ -1,0 +1,75 @@
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+env/
+.env/
+.env.*.local
+
+# Byte-compiled / optimized files
+*.pyo
+*.pyd
+
+# ========================
+# VSCode
+# ========================
+.vscode/
+.history/
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+debug.log
+
+# ========================
+# Mac / Windows system files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# AI / Machine Learning / RAG
+# ========================
+*.h5
+*.pt
+*.ckpt
+*.bin
+*.safetensors
+*.db
+*.sqlite
+*.pkl
+*.npy
+*.npz
+embeddings/
+checkpoints/
+cache/
+outputs/
+temp/
+
+# ========================
+# Notebook checkpoints
+# ========================
+.ipynb_checkpoints/
+
+# ========================
+# Distribution / Build / Packaging
+# ========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ========================
+# Other
+# ========================
+*.zip
+*.tar.gz
+*.egg.env

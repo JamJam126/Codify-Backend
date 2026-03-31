@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# Environment variables (.env is passed via docker-compose, not baked into the image)
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local vector DB data (mounted as volume)
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# ML Model Caches (download inside container if needed, don't copy from host)
+.cache/
+models/
+```***
